@@ -10,7 +10,6 @@ namespace URManager.View.ViewModel
 { 
     public class RobotsViewModel : TabItems
     { 
-        private string _name;
         private readonly IRobotDataProvider _robotDataProvider;
         private RobotItemViewModel? _selectedRobot;
 
