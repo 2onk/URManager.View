@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "URManager.View (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "URManager.View (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

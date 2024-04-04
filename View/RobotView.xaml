@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="URManager.View.View.RobotView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModel="using:URManager.View.ViewModel"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.Resources>
+            <DataTemplate x:Key="RobotDataTemplate"
+                          x:DataType="viewModel:RobotItemViewModel">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{x:Bind RobotName,Mode=OneWay}" FontWeight="Bold"/>
+                    <TextBlock Text="{x:Bind IP,Mode=OneWay}" Margin="5 0 0 0"/>
+                    <!--<TextBlock Text="update" Margin="5 0 0 0" Opacity="0.5"
+                     Visibility="{x:Bind Backup,Mode=OneWay}"/>-->
+                </StackPanel>
+            </DataTemplate>
+        </Grid.Resources>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition />
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        
+        <!-- Robot list -->
+        <Grid x:Name="RobotGridList" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Width="250">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Horizontal">
+            <Button Margin="10" Command="{Binding AddCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <SymbolIcon Symbol="AddFriend"/>
+                    <TextBlock Text="Add" Margin="5 0 0 0"/>
+                </StackPanel>
+            </Button>
+            <Button Margin="0 10 10 10" Command="{Binding DeleteCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <SymbolIcon Symbol="Delete"/>
+                    <TextBlock Text="Delete" Margin="5 0 0 0"/>
+                </StackPanel>
+            </Button>
+            <Button Command="{x:Bind MoveNavigationCommand}">
+                <SymbolIcon x:Name="symbolIconMoveNavigation" Symbol="Forward"/>
+            </Button>
+        </StackPanel>
+        <ListView Grid.Row="1"
+            ItemsSource="{Binding Robots,Mode=OneWay}"
+            SelectedItem="{Binding SelectedRobot,Mode=TwoWay}"
+            ItemTemplate="{StaticResource RobotDataTemplate}"
+            ScrollViewer.HorizontalScrollMode="Enabled"
+            ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+        </Grid>
+
+        <!-- Robot detail -->
+        <StackPanel Grid.Column="1" Margin="10"
+                    Visibility="{Binding IsRobotSelected,Mode=OneWay}">
+            <TextBox Header="Robot" Text="{Binding SelectedRobot.RobotName,
+                     Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                     PlaceholderText="RobotName"/>
+            <TextBox Header="IP" Margin="0 10 0 0"
+                     Text="{Binding SelectedRobot.IP,
+                     Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                     PlaceholderText="IP"/>
+            <!--<CheckBox Margin="0 20 0 0"
+                      IsChecked="{x:Bind ViewModel.SelectedRobot.Backup,
+                      Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}">
+                      Backup
+            </CheckBox>-->
+        </StackPanel>
+    </Grid>
+</Page>

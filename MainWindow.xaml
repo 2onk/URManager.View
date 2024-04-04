@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="URManager.View.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:controls="using:URManager.View.Controls"
+    xmlns:view="using:URManager.View.View"
+    xmlns:viewModel="using:URManager.View.ViewModel" 
+    xmlns:model="using:URManager.Backend.Model"
+    mc:Ignorable="d">
+
+    <Grid x:Name="root" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+        <Grid.Resources>
+            <DataTemplate x:Key="TabViewItemSelectorTemplate"
+                          x:DataType="model:TabItems">
+                <view:TabViewItemSelector Header="{x:Bind Name, Mode=OneTime}"
+                                          TabContentSource="{x:Bind}"
+                                          IconSource="{x:Bind (IconSource)Icon, Mode=OneWay}"
+                                          IsClosable="{x:Bind IsClosable}"
+                                          VerticalAlignment="Stretch"
+                                          HorizontalAlignment="Stretch"
+                                          HorizontalContentAlignment="Stretch"
+                                          CanDrag="False"/>
+            </DataTemplate>
+        </Grid.Resources>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+
+        <!--StartBackupButton-->
+        <StackPanel Orientation="Horizontal">
+            <Button Margin="10" Width="150" Command="{x:Bind ViewModel.StartBackupProcessCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <SymbolIcon Symbol="Save"/>
+                    <TextBlock Text="Start Backup" Margin="8 0 0 0 "/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <!--Darkmode button-->
+        <Button Grid.ColumnSpan="3" HorizontalAlignment="Right" VerticalAlignment="Top"
+            Content="Toggle Darkmode" Margin="10"
+            Click="ButtonToggleTheme_Click"/>
+
+        <!--Header-->
+        <controls:HeaderControl Grid.Row="1" Grid.ColumnSpan="3"/>
+
+        <!--TabView-->
+        <TabView x:Name="TabView"
+                 TabItemsSource="{x:Bind ViewModel.Tabs, Mode=OneWay}"
+                 TabItemTemplate="{StaticResource TabViewItemSelectorTemplate}" Grid.Row="3"/>
+
+
+        <!--Statusbar-->
+        <Border Grid.Row="4" Grid.ColumnSpan="3" Background="{StaticResource HeaderBackgroundBrush}">
+            <TextBlock Text=" (c) Universal Robots" Foreground="White" Margin="5"/>
+        </Border>
+
+    </Grid>
+</Window>

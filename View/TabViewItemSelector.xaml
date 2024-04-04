@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TabViewItem
+    x:Class="URManager.View.View.TabViewItemSelector"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:URManager.View.View"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:viewmodel="using:URManager.View.ViewModel"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <TabViewItem.Resources>
+        <DataTemplate x:Name="RobotViewTemplate"
+                      x:DataType="viewmodel:RobotsViewModel">
+            <local:RobotView/>
+        </DataTemplate>
+        <DataTemplate x:Name="SettingsViewTemplate"
+                      x:DataType="viewmodel:SettingsViewModel">
+            <local:SettingsView/>
+        </DataTemplate>
+    </TabViewItem.Resources>
+</TabViewItem>
