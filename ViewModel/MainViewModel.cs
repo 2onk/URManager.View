@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using URManager.Backend.ViewModel;
 using URManager.View.Command;
 using URManager.Backend.Model;
+using Microsoft.UI.Xaml;
+using System;
 
 namespace URManager.View.ViewModel
 {
@@ -11,11 +13,14 @@ namespace URManager.View.ViewModel
     {
         private TabItems? _selectedViewModel;
         private SettingsViewModel _settingsViewModel;
+        private DispatcherTimer _timer;
+        private bool _isBackupEnabled = false;
         public ObservableCollection<TabItems> Tabs { get; set; } = new();
 
         public MainViewModel()
         {
             CreateTabs();
+            _timer = new DispatcherTimer();
             SelectViewModelCommand = new DelegateCommand(SelectViewModel);
             StartBackupProcessCommand = new DelegateCommand(StartBackupProcess);
             //StartUpdateProcessCommand = new DelegateCommand(StartUpdateProcess);
@@ -26,6 +31,7 @@ namespace URManager.View.ViewModel
             get => _selectedViewModel;
             set
             {
+                if (value == _selectedViewModel) return;
                 _selectedViewModel = value;
                 RaisePropertyChanged();
             }
@@ -37,7 +43,20 @@ namespace URManager.View.ViewModel
 
             set
             {
+                if (value == _settingsViewModel) return;
                 _settingsViewModel = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool IsBackupEnabled
+        {
+            get => _isBackupEnabled;
+
+            set
+            {
+                if (value == _isBackupEnabled) return;
+                _isBackupEnabled = value;
                 RaisePropertyChanged();
             }
         }
@@ -58,10 +77,8 @@ namespace URManager.View.ViewModel
         /// <returns></returns>
         public async override Task LoadAsync()
         {
-            if (SelectedViewModel is not null)
-            {
-                await SelectedViewModel.LoadAsync();
-            }
+            if (SelectedViewModel is null) return; 
+            await SelectedViewModel.LoadAsync();         
         }
 
         /// <summary>
@@ -78,13 +95,55 @@ namespace URManager.View.ViewModel
         /// Start backup process for all selected robots with selected interval
         /// </summary>
         /// <param name="parameter"></param>
-        private async void StartBackupProcess(object? parameter)
+        private void StartBackupProcess(object? parameter)
+        {
+            if (!IsBackupEnabled)
+            {
+                IsBackupEnabled = true;
+
+                DispatcherTimerSetup();
+
+                //call first time backup process
+                BackupProcess();
+
+                //backup every 60 s
+                _timer.Start();
+            }
+            else
+            {
+                IsBackupEnabled = false;
+                _timer.Stop();
+            }
+        }
+        /// <summary>
+        /// Dispatcher Timer set to 60s ticks
+        /// </summary>
+        private void DispatcherTimerSetup(int timerIntervall=60)
+        {
+            _timer.Interval = TimeSpan.FromSeconds(timerIntervall);
+            _timer.Tick += Timer_Tick;
+        }
+
+        /// <summary>
+        /// Main BackupProcess call which calls the method in RobotViewModel
+        /// </summary>
+        private async void BackupProcess()
         {
             _settingsViewModel.ItemLogger.Add("start");
             if (SelectedViewModel is RobotsViewModel robvm)
             {
-                 await robvm.BackupProcessAsync(_settingsViewModel);
+                await robvm.BackupProcessAsync(_settingsViewModel);
             }
+        }
+
+        /// <summary>
+        /// Every DispatcherTimer tick the BackupProcess will be executed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Timer_Tick(object sender, object e)
+        {
+            BackupProcess();
         }
 
         /// <summary>
@@ -97,6 +156,7 @@ namespace URManager.View.ViewModel
             Tabs.Add(SelectedViewModel);
             Tabs.Add(_settingsViewModel);
         }
+
 
         //private void StartUpdateProcess(object? obj)
         //{

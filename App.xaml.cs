@@ -9,6 +9,7 @@ namespace URManager.View
 {
     public partial class App : Application
     {
+        public static Window Window { get; } = new MainWindow();
         private Window? m_window;
         private readonly ServiceProvider _serviceProvider;
         public App()

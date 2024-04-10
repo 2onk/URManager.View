@@ -1,5 +1,6 @@
-﻿using Ookii.Dialogs.Wpf;
+﻿using System.Collections;
 using URManager.Backend.Model;
+using URManager.Backend.ViewModel;
 using URManager.View.Command;
 
 namespace URManager.View.ViewModel
@@ -13,10 +14,16 @@ namespace URManager.View.ViewModel
             BrowseSavePathCommand = new DelegateCommand(BrowseSavePath);
             ItemLogger = new();
             _settings = new Settings();
+            BackupIntervall = new int[1,7,14,31];
         }
 
         public DelegateCommand BrowseSavePathCommand { get; }
         public ItemLogger ItemLogger { get; set; }
+
+        public ICollection BackupIntervall { get;}
+
+        public int SelectedIntervall { get; set; }
+
 
         public string SelectedSavePath
         {
@@ -58,17 +65,15 @@ namespace URManager.View.ViewModel
         /// Open Dialog window to let the user browse any path for saving support/backup files
         /// </summary>
         /// <param name="parameter"></param>
-        private void BrowseSavePath(object? parameter)
+        private async void BrowseSavePath(object? parameter)
         {
-            var dialog = new VistaFolderBrowserDialog();
-            dialog.Description = "Please select a folder where you would like to save your supportfiles.";
-            dialog.UseDescriptionForTitle = true; // This applies to the Vista style dialog only, not the old dialog.
 
-            if ((bool)dialog.ShowDialog()!)
+            string savepath = await FilePicker.OpenFolderAsync();
+
+            if (savepath is not null)
             {
-                SelectedSavePath = dialog.SelectedPath;
+                SelectedSavePath = savepath;
                 ItemLogger.Add("Saving path selected");
-
             }
             else
             {

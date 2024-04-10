@@ -38,12 +38,12 @@
 
         <!--StartBackupButton-->
         <StackPanel Orientation="Horizontal">
-            <Button Margin="10" Width="150" Command="{x:Bind ViewModel.StartBackupProcessCommand}">
+            <ToggleButton Margin="10" Width="150" IsChecked="{x:Bind ViewModel.IsBackupEnabled}" Command="{x:Bind ViewModel.StartBackupProcessCommand}">
                 <StackPanel Orientation="Horizontal">
                     <SymbolIcon Symbol="Save"/>
                     <TextBlock Text="Start Backup" Margin="8 0 0 0 "/>
                 </StackPanel>
-            </Button>
+            </ToggleButton>
         </StackPanel>
 
         <!--Darkmode button-->

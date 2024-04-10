@@ -86,7 +86,7 @@ namespace URManager.View.ViewModel
                         if (connected)
                         {
                             //generate supportfile with dashboardcommands
-                            settings.ItemLogger.Add("Sending Dashboardcommand: " + DashboardCommands.Generate_support_file + DashboardCommands.Support_file_savepath);
+                            settings.ItemLogger.Add($"Sending Dashboardcommand: {DashboardCommands.Generate_support_file}{DashboardCommands.Support_file_savepath}");
                             SendDashboardCommand(DashboardCommands.Generate_support_file + DashboardCommands.Support_file_savepath, client);
 
                             string message =  await ReadDashboardMessage(client);
@@ -105,7 +105,7 @@ namespace URManager.View.ViewModel
 
 
                             client.Disconnect();
-                            settings.ItemLogger.Add("Disconnected: " + robot.RobotName + ": " + robot.IP);
+                            settings.ItemLogger.Add($"Disconnected: {robot.RobotName}: {robot.IP}");
                         }
                     }
                     else
