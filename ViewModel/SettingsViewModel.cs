@@ -33,6 +33,7 @@ namespace URManager.View.ViewModel
             get => _settings.SelectedsavePath;
             set
             {
+                if (value == _settings.SelectedsavePath) return;
                 _settings.SelectedsavePath = value;
                 RaisePropertyChanged();
             }
@@ -46,6 +47,7 @@ namespace URManager.View.ViewModel
             get => _settings.IsBackupSelected;
             set
             {
+                if (value == _settings.IsBackupSelected) return;
                 _settings.IsBackupSelected = value;
                 RaisePropertyChanged();
             }
@@ -59,6 +61,7 @@ namespace URManager.View.ViewModel
             get => _settings.IsUpdateSelected;
             set
             {
+                if (value == _settings.IsUpdateSelected) return;
                 _settings.IsUpdateSelected = value;
                 RaisePropertyChanged();
             }
@@ -72,6 +75,7 @@ namespace URManager.View.ViewModel
             get => _settings.SelectedBackupIntervall;
             set
             {
+                if (value == _settings.SelectedBackupIntervall) return;
                 _settings.SelectedBackupIntervall = value;
                 RaisePropertyChanged();
             }
@@ -100,7 +104,7 @@ namespace URManager.View.ViewModel
         /// Open Dialog window to let the user browse any path for saving support/backup files
         /// </summary>
         /// <param name="parameter"></param>
-        private async void BrowseSavePath(object? parameter)
+        private async void BrowseSavePath(object parameter)
         {
 
             string savepath = await FilePicker.OpenFolderAsync();
@@ -108,12 +112,12 @@ namespace URManager.View.ViewModel
             if (savepath is not null)
             {
                 SelectedSavePath = savepath;
-                ItemLogger.Add("Saving path selected");
+                ItemLogger.InsertNewMessage("Saving path selected");
             }
             else
             {
                 SelectedSavePath = "";
-                ItemLogger.Add("No path selected");
+                ItemLogger.InsertNewMessage("No path selected");
             }
         }
     }

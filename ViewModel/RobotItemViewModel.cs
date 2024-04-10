@@ -14,11 +14,12 @@ namespace URManager.View.ViewModel
 
         public int Id => _model.Id;
 
-        public string? RobotName
+        public string RobotName
         {
             get => _model.RobotName;
             set
             {
+                if (value == _model.RobotName) return;
                 _model.RobotName = value;
                 RaisePropertyChanged(nameof(RobotName));
                 //if (string.IsNullOrEmpty(_model.RobotName))
@@ -32,11 +33,12 @@ namespace URManager.View.ViewModel
             }
         }
 
-        public string? IP
+        public string IP
         {
             get => _model.IP;
             set
             {
+                if (value == _model.IP) return;
                 _model.IP = value;
                 RaisePropertyChanged(nameof(IP));
                 //if (string.IsNullOrEmpty(_model.IP))

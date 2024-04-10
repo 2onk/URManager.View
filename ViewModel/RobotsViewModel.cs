@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using Renci.SshNet.Messages;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using URManager.Backend.Data;
@@ -11,7 +12,8 @@ namespace URManager.View.ViewModel
     public class RobotsViewModel : TabItems
     { 
         private readonly IRobotDataProvider _robotDataProvider;
-        private RobotItemViewModel? _selectedRobot;
+        private RobotItemViewModel _selectedRobot;
+        private int _currentRobotIndex = 0;
 
         public RobotsViewModel(object name, object icon, bool isClosable) : base(name, icon, isClosable)
         {
@@ -23,11 +25,12 @@ namespace URManager.View.ViewModel
 
         public ObservableCollection<RobotItemViewModel> Robots { get; } = new();
 
-        public RobotItemViewModel? SelectedRobot
+        public RobotItemViewModel SelectedRobot
         {
             get => _selectedRobot;
             set
             {
+                if (value == _selectedRobot) return;
                 _selectedRobot = value;
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(IsRobotSelected));
@@ -58,6 +61,7 @@ namespace URManager.View.ViewModel
             foreach (var robot in robots)
             {
                 Robots.Add(new RobotItemViewModel(robot));
+                _currentRobotIndex++;
             }
         }
 
@@ -69,46 +73,38 @@ namespace URManager.View.ViewModel
         /// <returns></returns>
         public async Task BackupProcessAsync(SettingsViewModel settings)
         {
+            if (_currentRobotIndex == 0) return;
+
             foreach (var robot in Robots)
             {
-                if (robot.IP is not null)
+                if (robot.IP is null) return;
+                
+                if (!CheckIP(robot.IP))
                 {
-                    if (CheckIP(robot.IP))
-                    {
-                        var client = new ClientTCP(robot.IP);
-                        var sftclient = new ClientSSH(robot.IP);
-
-                        var connected = await ConnectToDashboardServerAsync(robot, settings, client);
-                        if (connected)
-                        {
-                            //generate supportfile with dashboardcommands
-                            settings.ItemLogger.Add($"Sending Dashboardcommand: {DashboardCommands.Generate_support_file}{DashboardCommands.Support_file_savepath}");
-                            SendDashboardCommand(DashboardCommands.Generate_support_file + DashboardCommands.Support_file_savepath, client);
-
-                            string message =  await ReadDashboardMessage(client);
-                            settings.ItemLogger.Add(message);
-
-
-                            //download via sftp supportfile and delete at remote destination
-                            if (!sftclient.Connected)
-                            {
-                                var filename = GetSupportFileName(message);
-                                sftclient.ConnectToSftpServer();
-                                sftclient.DownloadFile(DashboardCommands.Support_file_savepath + filename, settings.SelectedSavePath + "\\" + filename);
-                                sftclient.DeleteFile(DashboardCommands.Support_file_savepath + filename);
-                                sftclient.Disconnect();
-                            }
-
-
-                            client.Disconnect();
-                            settings.ItemLogger.Add($"Disconnected: {robot.RobotName}: {robot.IP}");
-                        }
-                    }
-                    else
-                    {
-                        settings.ItemLogger.Add(robot.RobotName + ": " + robot.IP + " please check IP");
-                    }
+                    settings.ItemLogger.InsertNewMessage($"{robot.RobotName}: {robot.IP} please check IP");
+                    return;
                 }
+                    
+                var client = new ClientTCP(robot.IP);
+                var sftclient = new ClientSFTP(robot.IP);
+
+                var connected = await ConnectToDashboardServerAsync(robot, settings, client);
+                if (!connected) return;
+
+                //generate supportfile with dashboardcommands
+                settings.ItemLogger.InsertNewMessage($"Sending Dashboardcommand: {DashboardCommands.Generate_support_file}{DashboardCommands.Support_file_savepath}");
+                SendDashboardCommand(DashboardCommands.Generate_support_file + DashboardCommands.Support_file_savepath, client);
+
+                string message =  await ReadDashboardMessage(client);
+                settings.ItemLogger.InsertNewMessage(message);
+
+                //download via sftp supportfile and delete at remote destination
+                if (sftclient.Connected) return;
+                DownloadAndDeleteSupportfile(message, sftclient, settings);
+                settings.ItemLogger.InsertNewMessage("Supportfile downloaded and deleted at remote host");
+
+                client.Disconnect();
+                settings.ItemLogger.InsertNewMessage($"Disconnected: {robot.RobotName}: {robot.IP}");
             }
         }
 
@@ -118,12 +114,29 @@ namespace URManager.View.ViewModel
         //}
 
         /// <summary>
+        /// connect via sftp to robot/ursim download file to local host and delete at remote host
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="sftclient"></param>
+        /// <param name="settings"></param>
+        /// <returns>true if succeded</returns>
+        private bool DownloadAndDeleteSupportfile(string message, ClientSFTP sftclient, SettingsViewModel settings)
+        {
+            var filename = GetSupportFileName(message);
+            sftclient.ConnectToSftpServer();
+            sftclient.DownloadFile(DashboardCommands.Support_file_savepath + filename, settings.SelectedSavePath + "\\" + filename);
+            sftclient.DeleteFile(DashboardCommands.Support_file_savepath + filename);
+            sftclient.Disconnect();
+            return true;
+        }
+
+        /// <summary>
         /// Add new robot to list
         /// </summary>
         /// <param name="parameter"></param>
-        private void Add(object? parameter)
+        private void Add(object parameter)
         {
-            var robot = new Robot { RobotName = "New", IP = "0.0.0.0" };
+            var robot = new Robot(++_currentRobotIndex, "New", "0.0.0.0");
             var viewModel = new RobotItemViewModel(robot);
             Robots.Add(viewModel);
             SelectedRobot = viewModel;
@@ -133,13 +146,15 @@ namespace URManager.View.ViewModel
         /// Delete selected robot in listview
         /// </summary>
         /// <param name="parameter"></param>
-        private void Delete(object? parameter)
+        private void Delete(object parameter)
         {
-            if (SelectedRobot is not null)
-            {
-                Robots.Remove(SelectedRobot);
-                SelectedRobot = null;
-            }
+            if (SelectedRobot is null) return;
+            
+            Robots.Remove(SelectedRobot);
+            SelectedRobot = null;
+            --_currentRobotIndex;
+
+
         }
 
         /// <summary>
@@ -147,7 +162,7 @@ namespace URManager.View.ViewModel
         /// </summary>
         /// <param name="parameter"></param>
         /// <returns>bool</returns>
-        private bool CanDelete(object? parameter) => SelectedRobot is not null;
+        private bool CanDelete(object parameter) => SelectedRobot is not null;
 
         /// <summary>
         /// check if IP is IPv4
@@ -160,10 +175,8 @@ namespace URManager.View.ViewModel
             {
                 return false;
             }
-            else
-            {
-                return true;
-            }
+
+            return true;
         }
 
         /// <summary>
@@ -177,23 +190,23 @@ namespace URManager.View.ViewModel
         {
             if (robot.IP is null)
             {
-                settings.ItemLogger.Add("Please check IP adress of Robots");
+                settings.ItemLogger.InsertNewMessage("Please check IP adress of Robots");
                 return false;
             }
 
-            settings.ItemLogger.Add("pinging: " + robot.IP);
+            settings.ItemLogger.InsertNewMessage("pinging: " + robot.IP);
             var connected = await client.ConnectToServerAsync();
 
             if (connected)
             {
-                settings.ItemLogger.Add("Connected to: " + robot.RobotName + ", " + robot.IP);
-                settings.ItemLogger.Add(await ReadDashboardMessage(client));
+                settings.ItemLogger.InsertNewMessage("Connected to: " + robot.RobotName + ", " + robot.IP);
+                settings.ItemLogger.InsertNewMessage(await ReadDashboardMessage(client));
                 return true;
 
             }
             else
             {
-                settings.ItemLogger.Add(robot.RobotName + ": " + robot.IP + " is not available");
+                settings.ItemLogger.InsertNewMessage(robot.RobotName + ": " + robot.IP + " is not available");
                 return false;
             }
 

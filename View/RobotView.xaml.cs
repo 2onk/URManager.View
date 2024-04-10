@@ -16,7 +16,7 @@ namespace URManager.View.View
         /// swaps robot view list to other column only for UI necessary
         /// </summary>
         /// <param name="parameter"></param>
-        private void MoveNavigation(object? parameter)
+        private void MoveNavigation(object parameter)
         {
             var column = Grid.GetColumn(RobotGridList);
             var newColumn = column == 0 ? 2 : 0;

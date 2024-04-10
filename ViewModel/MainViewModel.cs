@@ -11,7 +11,7 @@ namespace URManager.View.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
-        private TabItems? _selectedViewModel;
+        private TabItems _selectedViewModel;
         private SettingsViewModel _settingsViewModel;
         private DispatcherTimer _timer;
         private bool _isBackupEnabled = false;
@@ -26,7 +26,7 @@ namespace URManager.View.ViewModel
             //StartUpdateProcessCommand = new DelegateCommand(StartUpdateProcess);
         }
 
-        public TabItems? SelectedViewModel
+        public TabItems SelectedViewModel
         {
             get => _selectedViewModel;
             set
@@ -85,7 +85,7 @@ namespace URManager.View.ViewModel
         /// Switch view and viewmodels as tabitems
         /// </summary>
         /// <param name="parameter"></param>
-        private async void SelectViewModel(object? parameter)
+        private async void SelectViewModel(object parameter)
         {
             SelectedViewModel = parameter as TabItems;
             await LoadAsync();
@@ -95,7 +95,7 @@ namespace URManager.View.ViewModel
         /// Start backup process for all selected robots with selected interval
         /// </summary>
         /// <param name="parameter"></param>
-        private void StartBackupProcess(object? parameter)
+        private void StartBackupProcess(object parameter)
         {
             if (!IsBackupEnabled)
             {
@@ -130,7 +130,7 @@ namespace URManager.View.ViewModel
         /// </summary>
         private async void BackupProcess()
         {
-            _settingsViewModel.ItemLogger.Add("start");
+            _settingsViewModel.ItemLogger.InsertNewMessage("start");
             if (SelectedViewModel is RobotsViewModel robvm)
             {
                 await robvm.BackupProcessAsync(_settingsViewModel);

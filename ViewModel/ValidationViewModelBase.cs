@@ -13,9 +13,9 @@ namespace URManager.View.ViewModel
         private Dictionary<string, List<string>> _errorsByPropertyName = new();
         public bool HasErrors => _errorsByPropertyName.Any();
 
-        public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
+        public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
 
-        public IEnumerable GetErrors(string? propertyName)
+        public IEnumerable GetErrors(string propertyName)
         {
             return propertyName is not null && _errorsByPropertyName.ContainsKey(propertyName)
              ? _errorsByPropertyName[propertyName]
@@ -28,7 +28,7 @@ namespace URManager.View.ViewModel
         }
 
         protected void AddError(string error,
-            [CallerMemberName] string? propertyName = null)
+            [CallerMemberName] string propertyName = null)
         {
             if (propertyName is null) return;
 
@@ -44,7 +44,7 @@ namespace URManager.View.ViewModel
             }
         }
 
-        protected void ClearErrors([CallerMemberName] string? propertyName = null)
+        protected void ClearErrors([CallerMemberName] string propertyName = null)
         {
             if (propertyName is null) return;
 

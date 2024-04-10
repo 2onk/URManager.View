@@ -10,12 +10,12 @@
   <Identity
     Name="ffd5b2ef-86c6-4302-91b0-d62cc0c77198"
     Publisher="CN=dasa"
-    Version="1.0.5.0" />
+    Version="1.0.9.0" />
 
   <mp:PhoneIdentity PhoneProductId="ffd5b2ef-86c6-4302-91b0-d62cc0c77198" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>URManager.View</DisplayName>
+    <DisplayName>UR-Manager</DisplayName>
     <PublisherDisplayName>dasa</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -34,13 +34,14 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
-        DisplayName="URManager.View"
-        Description="URManager.View"
+        DisplayName="UR-Manager"
+        Description="URManager"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"  Square71x71Logo="Assets\SmallTile.png" Square310x310Logo="Assets\LargeTile.png"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        <uap:LockScreen BadgeLogo="Assets\BadgeLogo.png" Notification="badgeAndTileText"/>
       </uap:VisualElements>
     </Application>
   </Applications>
