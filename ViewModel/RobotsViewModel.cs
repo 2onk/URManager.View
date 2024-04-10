@@ -50,18 +50,14 @@ namespace URManager.View.ViewModel
         /// <returns></returns>
         public async override Task LoadAsync()
         {
-            if (Robots.Any())
-            {
-                return;
-            }
+            if (Robots.Any()) return;
 
             var robots = await _robotDataProvider.GetAll();
-            if (robots is not null)
+            if (robots is null) return;
+            
+            foreach (var robot in robots)
             {
-                foreach (var robot in robots)
-                {
-                    Robots.Add(new RobotItemViewModel(robot));
-                }
+                Robots.Add(new RobotItemViewModel(robot));
             }
         }
 

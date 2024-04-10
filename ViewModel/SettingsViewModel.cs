@@ -1,4 +1,8 @@
 ﻿using System.Collections;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using URManager.Backend.Data;
 using URManager.Backend.Model;
 using URManager.Backend.ViewModel;
 using URManager.View.Command;
@@ -8,22 +12,21 @@ namespace URManager.View.ViewModel
     public class SettingsViewModel : TabItems
     {
         private Settings _settings;
+        private readonly IBackupDataProvider _backupDataProvider;
 
         public SettingsViewModel(object name, object icon, bool isClosable) : base(name, icon, isClosable)
         {
             BrowseSavePathCommand = new DelegateCommand(BrowseSavePath);
+            _backupDataProvider = new BackupDataProvider();
             ItemLogger = new();
             _settings = new Settings();
-            BackupIntervall = new int[1,7,14,31];
+            LoadBackupData();
         }
 
         public DelegateCommand BrowseSavePathCommand { get; }
         public ItemLogger ItemLogger { get; set; }
 
-        public ICollection BackupIntervall { get;}
-
-        public int SelectedIntervall { get; set; }
-
+        public ObservableCollection<BackupIntervall> BackupIntervalls { get; } = new();
 
         public string SelectedSavePath
         {
@@ -59,6 +62,21 @@ namespace URManager.View.ViewModel
                 _settings.IsUpdateSelected = value;
                 RaisePropertyChanged();
             }
+        }
+
+        private bool LoadBackupData()
+        {
+            if (BackupIntervalls.Any()) return false;
+            
+
+            var intervalls = _backupDataProvider.GetAll();
+            if (intervalls is null) return false;
+
+            foreach (var backupIntervall in intervalls)
+            {
+                BackupIntervalls.Add(backupIntervall);
+            }
+            return true;
         }
 
         /// <summary>
