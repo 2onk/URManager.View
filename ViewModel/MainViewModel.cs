@@ -101,7 +101,7 @@ namespace URManager.View.ViewModel
             {
                 IsBackupEnabled = true;
 
-                DispatcherTimerSetup();
+                DispatcherTimerSetup(_settingsViewModel.SelectedIntervallItem.Intervall);
 
                 //call first time backup process
                 BackupProcess();
@@ -112,6 +112,7 @@ namespace URManager.View.ViewModel
             else
             {
                 IsBackupEnabled = false;
+                _timer.Tick -= Timer_Tick;
                 _timer.Stop();
             }
         }

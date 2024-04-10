@@ -41,6 +41,7 @@
             <ComboBox Margin="10" Width="150" SelectedIndex="1" 
                       ItemsSource="{Binding BackupIntervalls, Mode=OneWay}" 
                       DisplayMemberPath="Name"
+                      SelectedItem="{Binding SelectedIntervallItem, Mode=TwoWay}"
                       Visibility="{Binding IsBackupSelected}"/>
         </StackPanel>
 

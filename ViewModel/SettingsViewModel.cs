@@ -64,6 +64,23 @@ namespace URManager.View.ViewModel
             }
         }
 
+        /// <summary>
+        /// Get selected Backup Intervall
+        /// </summary>
+        public BackupIntervall SelectedIntervallItem
+        {
+            get => _settings.SelectedBackupIntervall;
+            set
+            {
+                _settings.SelectedBackupIntervall = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        /// <summary>
+        /// load backupdata intervalls in for combobox
+        /// </summary>
+        /// <returns>true if loaded</returns>
         private bool LoadBackupData()
         {
             if (BackupIntervalls.Any()) return false;
