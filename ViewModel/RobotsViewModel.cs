@@ -1,4 +1,4 @@
-﻿using Renci.SshNet.Messages;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +8,7 @@ using URManager.Backend.Net;
 using URManager.View.Command;
 
 namespace URManager.View.ViewModel
-{ 
+{
     public class RobotsViewModel : TabItems
     { 
         private readonly IRobotDataProvider _robotDataProvider;
@@ -91,6 +91,10 @@ namespace URManager.View.ViewModel
                 var connected = await ConnectToDashboardServerAsync(robot, settings, client);
                 if (!connected) return;
 
+                //check polyscope version for supportfile support. CB3 > 3.13 and CB5 > 5.8
+                var versionCheck = await PolyscopeVersionCheck(client);
+                if (!versionCheck) return;  
+
                 //generate supportfile with dashboardcommands
                 settings.ItemLogger.InsertNewMessage($"Sending Dashboardcommand: {DashboardCommands.Generate_support_file}{DashboardCommands.Support_file_savepath}");
                 SendDashboardCommand(DashboardCommands.Generate_support_file + DashboardCommands.Support_file_savepath, client);
@@ -112,6 +116,55 @@ namespace URManager.View.ViewModel
         //{
 
         //}
+
+        /// <summary>
+        /// Check polyscope version for CB3 series higher than 3.13 and CB5 higher than 5.8
+        /// </summary>
+        /// <returns>true if supportfile can be generated</returns>
+        private async Task<bool> PolyscopeVersionCheck(ClientTCP client)
+        {
+            string polyscopeVersion = await GetPolyscopeVersion(client);
+            //check for CB3
+            if (polyscopeVersion[0] == '3') return PolyscopeSupportfileCheckCB3(polyscopeVersion);
+            return PolyscopeSupportfileCheckCB5(polyscopeVersion);
+        }
+
+        /// <summary>
+        /// Get polyscope version f.e. 
+        /// </summary>
+        /// <returns>string with polyscope version</returns>
+        private async Task<string> GetPolyscopeVersion(ClientTCP client)
+        {
+            SendDashboardCommand(DashboardCommands.PolyscopeVersion, client);
+            string polyscopeVersion = await ReadDashboardMessage(client);
+            return polyscopeVersion;
+        }
+
+        /// <summary>
+        /// check CB3 polyscope version if compatible to generate supportfile
+        /// </summary>
+        /// <returns>true if compatible</returns>
+        private bool PolyscopeSupportfileCheckCB3(string polyscopeVersionCB3)
+        {
+            string[] list = polyscopeVersionCB3.Split(".");
+            if (Int32.Parse(list[0]) != 3) return false;
+            if (Int32.Parse(list[1]) <13) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// check CB5 polyscope version if compatible to generate supportfile
+        /// </summary>
+        /// <returns>true if compatible</returns>
+        private bool PolyscopeSupportfileCheckCB5(string polyscopeVersionCB5)
+        {
+            //remove URSoftware in string URSoftware 5.13.0.113898 (Nov 17 2022)
+            polyscopeVersionCB5 = polyscopeVersionCB5.Remove(0, 11);
+            string[] list = polyscopeVersionCB5.Split(".");
+            if (Int32.Parse(list[0]) != 5) return false;
+            if (Int32.Parse(list[1]) < 8) return false;
+            return true;
+        }
 
         /// <summary>
         /// connect via sftp to robot/ursim download file to local host and delete at remote host
@@ -153,8 +206,6 @@ namespace URManager.View.ViewModel
             Robots.Remove(SelectedRobot);
             SelectedRobot = null;
             --_currentRobotIndex;
-
-
         }
 
         /// <summary>
@@ -175,7 +226,6 @@ namespace URManager.View.ViewModel
             {
                 return false;
             }
-
             return true;
         }
 
@@ -243,5 +293,6 @@ namespace URManager.View.ViewModel
             filename = filename.Remove(0, 24);
             return filename.Remove(filename.Length - 1);
         }
+
     }
 }
