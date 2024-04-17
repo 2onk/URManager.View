@@ -36,7 +36,7 @@ namespace URManager.View
         private void CustomizationWindow()
         {
             Title = "UR Manager";
-            AppWindow.SetIcon("Images/UR-logo.ico");
+            AppWindow.SetIcon("Images/icon.ico");
         }
 
     }

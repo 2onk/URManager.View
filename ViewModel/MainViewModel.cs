@@ -106,7 +106,7 @@ namespace URManager.View.ViewModel
                 //call first time backup process
                 BackupProcess();
 
-                //backup every 60 s
+                //backup every day
                 _timer.Start();
             }
             else
@@ -119,9 +119,9 @@ namespace URManager.View.ViewModel
         /// <summary>
         /// Dispatcher Timer set to 60s ticks
         /// </summary>
-        private void DispatcherTimerSetup(int timerIntervall=60)
+        private void DispatcherTimerSetup(int timerIntervall=1)
         {
-            _timer.Interval = TimeSpan.FromSeconds(timerIntervall);
+            _timer.Interval = TimeSpan.FromDays(timerIntervall);
             _timer.Tick += Timer_Tick;
         }
 

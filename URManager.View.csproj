@@ -23,7 +23,7 @@
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
     <PackageId>$(AssemblyName)</PackageId>
-    <ApplicationIcon>Images\UR-logo.ico</ApplicationIcon>
+    <ApplicationIcon></ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Data\**" />
@@ -41,8 +41,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Controls\HeaderControl.xaml" />
+    <None Remove="Images\icon.ico" />
     <None Remove="Images\logo.png" />
-    <None Remove="Images\UR-logo.ico" />
     <None Remove="Images\UR.png" />
     <None Remove="Properties\PublishProfiles\win10-arm64.pubxml" />
     <None Remove="Resources\Brushes.xaml" />
@@ -59,6 +59,7 @@
     <Content Include="Assets\Square44x44Logo.scale-200.png" />
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Images\icon.ico" />
     <Content Include="Images\logo.png" />
     <Content Include="Images\UR.png" />
   </ItemGroup>
@@ -132,8 +133,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\URManager.Backend\URManager.Backend\URManager.Backend.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Images\UR-logo.ico" />
   </ItemGroup>
 </Project>

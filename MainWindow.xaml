@@ -64,7 +64,7 @@
 
         <!--Statusbar-->
         <Border Grid.Row="4" Grid.ColumnSpan="3" Background="{StaticResource HeaderBackgroundBrush}">
-            <TextBlock Text=" (c) Universal Robots" Foreground="White" Margin="5"/>
+            <TextBlock Text=" (c) Dasa" Foreground="White" Margin="5"/>
         </Border>
 
     </Grid>
