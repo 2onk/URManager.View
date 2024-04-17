@@ -110,6 +110,8 @@ namespace URManager.View.ViewModel
                 string message =  await ReadDashboardMessage(client);
                 settings.ItemLogger.InsertNewMessage(message);
 
+                if (message.Contains("Error")) continue;
+
                 //download via sftp supportfile and delete at remote destination
                 if (sftclient.Connected) continue;
                 DownloadAndDeleteSupportfile(message, sftclient, settings);

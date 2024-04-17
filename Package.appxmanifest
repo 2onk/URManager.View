@@ -10,7 +10,7 @@
   <Identity
     Name="ffd5b2ef-86c6-4302-91b0-d62cc0c77198"
     Publisher="CN=dasa"
-    Version="1.0.10.0" />
+    Version="1.0.0.0" />
 
   <mp:PhoneIdentity PhoneProductId="ffd5b2ef-86c6-4302-91b0-d62cc0c77198" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
