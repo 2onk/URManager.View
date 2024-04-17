@@ -74,26 +74,34 @@ namespace URManager.View.ViewModel
         public async Task BackupProcessAsync(SettingsViewModel settings)
         {
             if (_currentRobotIndex == 0) return;
-
+            if (settings.SelectedSavePath == "")
+            {
+                settings.ItemLogger.InsertNewMessage($"Please select a save path before");
+                return;
+            }
             foreach (var robot in Robots)
             {
-                if (robot.IP is null) return;
+                if (robot.IP is null) continue;
                 
                 if (!CheckIP(robot.IP))
                 {
                     settings.ItemLogger.InsertNewMessage($"{robot.RobotName}: {robot.IP} please check IP");
-                    return;
+                    continue;
                 }
                     
                 var client = new ClientTCP(robot.IP);
-                var sftclient = new ClientSFTP(robot.IP);
+                var sftclient = new ClientSftp(robot.IP);
 
                 var connected = await ConnectToDashboardServerAsync(robot, settings, client);
-                if (!connected) return;
+                if (!connected) continue;
 
                 //check polyscope version for supportfile support. CB3 > 3.13 and CB5 > 5.8
                 var versionCheck = await PolyscopeVersionCheck(client);
-                if (!versionCheck) return;  
+                if (!versionCheck)
+                {
+                    settings.ItemLogger.InsertNewMessage($"{robot.RobotName}, {robot.IP}: is not supportfile compatible");
+                    continue;
+                }  
 
                 //generate supportfile with dashboardcommands
                 settings.ItemLogger.InsertNewMessage($"Sending Dashboardcommand: {DashboardCommands.Generate_support_file}{DashboardCommands.Support_file_savepath}");
@@ -103,7 +111,7 @@ namespace URManager.View.ViewModel
                 settings.ItemLogger.InsertNewMessage(message);
 
                 //download via sftp supportfile and delete at remote destination
-                if (sftclient.Connected) return;
+                if (sftclient.Connected) continue;
                 DownloadAndDeleteSupportfile(message, sftclient, settings);
                 settings.ItemLogger.InsertNewMessage("Supportfile downloaded and deleted at remote host");
 
@@ -137,6 +145,7 @@ namespace URManager.View.ViewModel
         {
             SendDashboardCommand(DashboardCommands.PolyscopeVersion, client);
             string polyscopeVersion = await ReadDashboardMessage(client);
+            polyscopeVersion = polyscopeVersion.Remove(0, 11);
             return polyscopeVersion;
         }
 
@@ -159,10 +168,9 @@ namespace URManager.View.ViewModel
         private bool PolyscopeSupportfileCheckCB5(string polyscopeVersionCB5)
         {
             //remove URSoftware in string URSoftware 5.13.0.113898 (Nov 17 2022)
-            polyscopeVersionCB5 = polyscopeVersionCB5.Remove(0, 11);
             string[] list = polyscopeVersionCB5.Split(".");
             if (Int32.Parse(list[0]) != 5) return false;
-            if (Int32.Parse(list[1]) < 8) return false;
+            if (Int32.Parse(list[1]) <= 8) return false;
             return true;
         }
 
@@ -173,7 +181,7 @@ namespace URManager.View.ViewModel
         /// <param name="sftclient"></param>
         /// <param name="settings"></param>
         /// <returns>true if succeded</returns>
-        private bool DownloadAndDeleteSupportfile(string message, ClientSFTP sftclient, SettingsViewModel settings)
+        private bool DownloadAndDeleteSupportfile(string message, ClientSftp sftclient, SettingsViewModel settings)
         {
             var filename = GetSupportFileName(message);
             sftclient.ConnectToSftpServer();
