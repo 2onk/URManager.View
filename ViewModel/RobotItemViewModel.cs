@@ -1,9 +1,10 @@
 ﻿using System.Net;
 using URManager.Backend.Model;
+using URManager.Backend.ViewModel;
 
 namespace URManager.View.ViewModel
 {
-    public class RobotItemViewModel : ValidationViewModelBase
+    public class RobotItemViewModel : ViewModelBase
     {
         private readonly Robot _model;
 
@@ -22,14 +23,6 @@ namespace URManager.View.ViewModel
                 if (value == _model.RobotName) return;
                 _model.RobotName = value;
                 RaisePropertyChanged(nameof(RobotName));
-                //if (string.IsNullOrEmpty(_model.RobotName))
-                //{
-                //    AddError("Robotname is required");
-                //}
-                //else
-                //{
-                //    ClearErrors();
-                //}
             }
         }
 
@@ -41,18 +34,6 @@ namespace URManager.View.ViewModel
                 if (value == _model.IP) return;
                 _model.IP = value;
                 RaisePropertyChanged(nameof(IP));
-                //if (string.IsNullOrEmpty(_model.IP))
-                //{
-                //    AddError("IP is required");
-                //}
-                //else if (!IPAddress.TryParse(_model.IP, out _))
-                //{
-                //    AddError("IPv4 format is required");
-                //}
-                //else
-                //{
-                //    ClearErrors();
-                //}
             }
         }
     }

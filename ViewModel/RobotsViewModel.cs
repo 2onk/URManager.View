@@ -3,8 +3,10 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using URManager.Backend.Data;
+using URManager.Backend.JSON;
 using URManager.Backend.Model;
 using URManager.Backend.Net;
+using URManager.Backend.ViewModel;
 using URManager.View.Command;
 
 namespace URManager.View.ViewModel
@@ -19,6 +21,7 @@ namespace URManager.View.ViewModel
         {
             _robotDataProvider = new RobotDataProvider();
             AddCommand = new DelegateCommand(Add);
+            ExportJsonCommand = new DelegateCommand(ExportJsonAsync);
             DeleteCommand = new DelegateCommand(Delete, CanDelete);
         }
 
@@ -46,6 +49,7 @@ namespace URManager.View.ViewModel
         public DelegateCommand AddCommand { get; }
 
         public DelegateCommand DeleteCommand { get; }
+        public DelegateCommand ExportJsonCommand { get; }
 
         /// <summary>
         /// Provides dummy robot data to listview
@@ -203,6 +207,25 @@ namespace URManager.View.ViewModel
             var viewModel = new RobotItemViewModel(robot);
             Robots.Add(viewModel);
             SelectedRobot = viewModel;
+        }
+
+        private async void ExportJsonAsync(object parameter)
+        {
+            string savePath =  await BrowseSavePathJson();
+            if(savePath == null) return;
+
+            var Json = new Json(savePath, Robots);
+            Json.CreateRobotJson();
+        }
+
+        /// <summary>
+        /// Open Dialog window to let the user browse any path for saving support/backup files
+        /// </summary>
+        /// <param name="parameter"></param>
+        private async Task<string> BrowseSavePathJson()
+        {
+            string _savePathJson = await FilePicker.SaveAsync("Choose .json", ".json", "Robots.json");
+            return _savePathJson;
         }
 
         /// <summary>

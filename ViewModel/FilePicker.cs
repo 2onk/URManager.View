@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Windows;
 using URManager.View;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace URManager.Backend.ViewModel
 {
