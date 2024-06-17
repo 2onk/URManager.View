@@ -40,7 +40,7 @@
                         <TextBlock Text="Add" Margin="5 0 0 0"/>
                     </StackPanel>
                 </Button>
-                <Button Margin="0 10 10 10" Command="{Binding AddCommand}">
+                <Button Margin="0 10 10 10" Command="{Binding ImportJsonCommand}">
                     <StackPanel Orientation="Horizontal">
                         <SymbolIcon Symbol="Import"/>
                         <TextBlock Text="Import" Margin="5 0 0 0"/>

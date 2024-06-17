@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,6 +23,7 @@ namespace URManager.View.ViewModel
             _robotDataProvider = new RobotDataProvider();
             AddCommand = new DelegateCommand(Add);
             ExportJsonCommand = new DelegateCommand(ExportJsonAsync);
+            ImportJsonCommand = new DelegateCommand(ImportJsonAsync);
             DeleteCommand = new DelegateCommand(Delete, CanDelete);
         }
 
@@ -50,6 +52,7 @@ namespace URManager.View.ViewModel
 
         public DelegateCommand DeleteCommand { get; }
         public DelegateCommand ExportJsonCommand { get; }
+        public DelegateCommand ImportJsonCommand { get; }
 
         /// <summary>
         /// Provides dummy robot data to listview
@@ -61,7 +64,7 @@ namespace URManager.View.ViewModel
 
             var robots = await _robotDataProvider.GetAll();
             if (robots is null) return;
-            
+
             foreach (var robot in robots)
             {
                 Robots.Add(new RobotItemViewModel(robot));
@@ -209,6 +212,9 @@ namespace URManager.View.ViewModel
             SelectedRobot = viewModel;
         }
 
+        /// <summary>
+        /// Create a Json file for all robots at your desired destination
+        /// </summary>
         private async void ExportJsonAsync(object parameter)
         {
             string savePath =  await BrowseSavePathJson();
@@ -219,12 +225,61 @@ namespace URManager.View.ViewModel
         }
 
         /// <summary>
-        /// Open Dialog window to let the user browse any path for saving support/backup files
+        /// Create a Json file for all robots at your desired destination
         /// </summary>
-        /// <param name="parameter"></param>
+        private async void ImportJsonAsync(object parameter)
+        {
+            string savePath = await OpenJsonFile();
+            if (savePath == null) return;
+
+            var Json = new Json(savePath);
+            var robots =  Json.ImportRobotJson();
+            if (robots == null) return;
+
+            DeleteRobots();
+            AddRobots(robots);
+        }
+
+        /// <summary>
+        /// delete observebale collection of robots
+        /// </summary>
+        /// <returns></returns>
+        private bool DeleteRobots()
+        {
+            Robots.Clear();
+            _currentRobotIndex = 0;
+            return true;
+        }
+
+        private bool AddRobots(List<Robot> robots)
+        {
+            if (robots == null) return false;
+
+            foreach (var robot in robots)
+            {
+                Robots.Add(new RobotItemViewModel(robot));
+                _currentRobotIndex++;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Open Dialog window to let the user browse any path for saving robot list
+        /// </summary>
+        /// <returns>string</returns>
         private async Task<string> BrowseSavePathJson()
         {
             string _savePathJson = await FilePicker.SaveAsync("Choose .json", ".json", "Robots.json");
+            return _savePathJson;
+        }
+
+        /// <summary>
+        /// Open Dialog window to let the user browse for json import file
+        /// </summary>
+        /// <returns>string</returns>
+        private async Task<string> OpenJsonFile()
+        {
+            string _savePathJson = await FilePicker.OpenAsync("Choose .json", ".json");
             return _savePathJson;
         }
 
