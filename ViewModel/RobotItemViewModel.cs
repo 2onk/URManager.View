@@ -36,5 +36,16 @@ namespace URManager.View.ViewModel
                 RaisePropertyChanged(nameof(IP));
             }
         }
+
+        public bool Backup
+        {
+            get => _model.Backup;
+            set
+            {
+                if (value == _model.Backup) return;
+                _model.Backup = value;
+                RaisePropertyChanged(nameof(Backup));
+            }
+        }
     }
 }

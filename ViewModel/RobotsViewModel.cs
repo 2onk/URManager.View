@@ -86,10 +86,14 @@ namespace URManager.View.ViewModel
                 settings.ItemLogger.InsertNewMessage($"Please select a save path before");
                 return;
             }
+
+            //count successfull supportfile downloads
+            int robotCounter = 0;
+
             foreach (var robot in Robots)
             {
-                if (robot.IP is null) continue;
-                
+                if (robot.IP is null || robot.Backup == false) continue;
+
                 if (!CheckIP(robot.IP))
                 {
                     settings.ItemLogger.InsertNewMessage($"{robot.RobotName}: {robot.IP} please check IP");
@@ -126,7 +130,11 @@ namespace URManager.View.ViewModel
 
                 client.Disconnect();
                 settings.ItemLogger.InsertNewMessage($"Disconnected: {robot.RobotName}: {robot.IP}");
+
+                robotCounter++;
             }
+
+            settings.ItemLogger.InsertNewMessage($"Finished getting supportfiles from chosen robots: {robotCounter}");
         }
 
         //public void UpdateProcess(SettingsViewModel settings)

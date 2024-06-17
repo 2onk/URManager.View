@@ -80,11 +80,11 @@
                      Text="{Binding SelectedRobot.IP,
                      Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
                      PlaceholderText="IP"/>
-            <!--<CheckBox Margin="0 20 0 0"
-                      IsChecked="{x:Bind ViewModel.SelectedRobot.Backup,
-                      Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}">
+            <CheckBox Margin="0 20 0 0"
+                      IsChecked="{Binding SelectedRobot.Backup,
+                      Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                       Backup
-            </CheckBox>-->
+            </CheckBox>
         </StackPanel>
     </Grid>
 </Page>
