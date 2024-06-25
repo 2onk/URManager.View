@@ -13,7 +13,7 @@ namespace URManager.Backend.ViewModel
         /// Open File Dialog, zum öffnen von Dateien. Gibt den Pfad zurück.
         /// </summary>
         /// <returns>Task</returns>
-        public static async Task<string> OpenAsync(string title, string filter)
+        public static async Task<string> OpenAsync(string filter)
         {
             var filePicker = new FileOpenPicker
             {

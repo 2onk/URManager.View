@@ -287,7 +287,7 @@ namespace URManager.View.ViewModel
         /// <returns>string</returns>
         private async Task<string> OpenJsonFile()
         {
-            string _savePathJson = await FilePicker.OpenAsync("Choose .json", ".json");
+            string _savePathJson = await FilePicker.OpenAsync(".json");
             return _savePathJson;
         }
 

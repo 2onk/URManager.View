@@ -54,6 +54,7 @@ namespace URManager.View.ViewModel
             {
                 if (value == _settings.IsBackupSelected) return;
                 _settings.IsBackupSelected = value;
+                SelectedSavePath = "";
                 RaisePropertyChanged();
             }
         }
@@ -68,6 +69,7 @@ namespace URManager.View.ViewModel
             {
                 if (value == _settings.IsUpdateSelected) return;
                 _settings.IsUpdateSelected = value;
+                SelectedSavePath = "";
                 RaisePropertyChanged();
             }
         }
@@ -106,12 +108,21 @@ namespace URManager.View.ViewModel
         }
 
         /// <summary>
-        /// Open Dialog window to let the user browse any path for saving support/backup files
+        /// Depending on backup or update choose the correct method
         /// </summary>
         /// <param name="parameter"></param>
         private async void BrowseSavePath(object parameter)
         {
 
+            if (IsBackupSelected) await BrowseSavePathBackup(parameter);
+            else await BrowseUpdateFile(parameter);
+        }
+
+        /// <summary>
+        /// Open Dialog window to let the user browse any path for saving support/backup files
+        /// </summary>
+        private async Task BrowseSavePathBackup(object parameter)
+        {
             string savepath = await FilePicker.OpenFolderAsync();
 
             if (savepath is not null)
@@ -123,6 +134,27 @@ namespace URManager.View.ViewModel
             {
                 SelectedSavePath = "";
                 ItemLogger.InsertNewMessage("No path selected");
+            }
+        }
+
+        /// <summary>
+        /// Open Dialog window to let the user browse for a .urp updatefile
+        /// </summary>
+        /// <param name="parameter"></param>
+        /// <param name="filter"></param>
+        private async Task BrowseUpdateFile(object parameter, string filter = ".urp")
+        {
+            string savepath = await FilePicker.OpenAsync(filter);
+
+            if (savepath is not null)
+            {
+                SelectedSavePath = savepath;
+                ItemLogger.InsertNewMessage("Updatefile selected");
+            }
+            else
+            {
+                SelectedSavePath = "";
+                ItemLogger.InsertNewMessage("No updatefile selected");
             }
         }
     }
