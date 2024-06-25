@@ -11,7 +11,7 @@ namespace URManager.View.ViewModel
 {
     public class SettingsViewModel : TabItems
     {
-        private Settings _settings;
+        private readonly Settings _settings;
         private readonly IBackupDataProvider _backupDataProvider;
 
         public SettingsViewModel(object name, object icon, bool isClosable) : base(name, icon, isClosable)
@@ -27,6 +27,11 @@ namespace URManager.View.ViewModel
         public ItemLogger ItemLogger { get; set; }
 
         public ObservableCollection<BackupIntervall> BackupIntervalls { get; } = new();
+
+        /// <summary>
+        /// readonly prop for all settings
+        /// </summary>
+        public Settings Settings => _settings;
 
         public string SelectedSavePath
         {

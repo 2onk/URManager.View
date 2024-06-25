@@ -24,7 +24,7 @@
         </Grid.ColumnDefinitions>
 
         <TextBlock Grid.Column="0"  Margin="10 18 0 0" VerticalAlignment="Top" HorizontalAlignment="Left">
-            Backup saving path:
+            Data path:
         </TextBlock>
         <TextBox Grid.Column="1" Margin="10" IsReadOnly="True" IsHitTestVisible="False"
                  Text="{Binding SelectedSavePath,
