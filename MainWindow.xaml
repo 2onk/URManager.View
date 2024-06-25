@@ -39,7 +39,7 @@
         <!--StartBackupButton-->
         <StackPanel Orientation="Horizontal">
             <ToggleButton x:Name="BackupButton" Margin="10" Width="150" 
-                          IsChecked="{x:Bind ViewModel.IsBackupEnabled}" 
+                          IsChecked="{x:Bind ViewModel.IsBackupChecked, Mode=TwoWay}"
                           Command="{x:Bind ViewModel.StartBackupProcessCommand}">
                 <StackPanel Orientation="Horizontal">
                     <SymbolIcon Symbol="Save"/>

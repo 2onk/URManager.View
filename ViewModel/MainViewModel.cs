@@ -14,7 +14,8 @@ namespace URManager.View.ViewModel
         private TabItems _selectedViewModel;
         private SettingsViewModel _settingsViewModel;
         private DispatcherTimer _timer;
-        private bool _isBackupEnabled = false;
+        private bool _isBackupChecked = false;
+
         public ObservableCollection<TabItems> Tabs { get; set; } = new();
 
         public MainViewModel()
@@ -22,7 +23,7 @@ namespace URManager.View.ViewModel
             CreateTabs();
             _timer = new DispatcherTimer();
             SelectViewModelCommand = new DelegateCommand(SelectViewModel);
-            StartBackupProcessCommand = new DelegateCommand(StartBackupProcess);
+            StartBackupProcessCommand = new DelegateCommand(StartBackupProcess, CanStartBackupProcess);
             //StartUpdateProcessCommand = new DelegateCommand(StartUpdateProcess);
         }
 
@@ -49,16 +50,22 @@ namespace URManager.View.ViewModel
             }
         }
 
-        public bool IsBackupEnabled
+        public bool IsBackupChecked
         {
-            get => _isBackupEnabled;
+            get => _isBackupChecked;
 
             set
             {
-                if (value == _isBackupEnabled) return;
-                _isBackupEnabled = value;
+                if (value == _isBackupChecked) return;
+                _isBackupChecked = value;
                 RaisePropertyChanged();
             }
+        }
+
+        public bool BackupPressed ()
+        {
+            IsBackupChecked = !IsBackupChecked;
+            return IsBackupChecked;
         }
 
         public DelegateCommand SelectViewModelCommand { get; }
@@ -66,10 +73,6 @@ namespace URManager.View.ViewModel
 
         //update noch ausarbeiten 
         //public DelegateCommand StartUpdateProcessCommand { get; }
-
-        //can delete noch ausarbeiten
-        //private bool CanStartBackupProcess(object? parameter) => SettingsViewModel.SelectedSavePath != "";
-
 
         /// <summary>
         /// Provides dummy robot data to listview
@@ -97,11 +100,9 @@ namespace URManager.View.ViewModel
         /// <param name="parameter"></param>
         private void StartBackupProcess(object parameter)
         {
-            if (!IsBackupEnabled)
+            if (IsBackupChecked is true)
             {
-                IsBackupEnabled = true;
-
-                DispatcherTimerSetup(_settingsViewModel.SelectedIntervallItem.Intervall);
+                DispatcherTimerSetup(SettingsViewModel.SelectedIntervallItem.Intervall);
 
                 //call first time backup process
                 BackupProcess();
@@ -111,13 +112,18 @@ namespace URManager.View.ViewModel
             }
             else
             {
-                IsBackupEnabled = false;
                 _timer.Tick -= Timer_Tick;
                 _timer.Stop();
             }
         }
+
+        //canexcute noch ausarbeiten
+        //private bool CanStartBackupProcess(object? parameter) => SettingsViewModel.SelectedSavePath != "";
+
+        private bool CanStartBackupProcess(object parameter) => SettingsViewModel.IsBackupSelected is true;
+
         /// <summary>
-        /// Dispatcher Timer set to 60s ticks
+        /// Dispatcher Timer set to 1day ticks
         /// </summary>
         private void DispatcherTimerSetup(int timerIntervall=1)
         {
@@ -130,13 +136,14 @@ namespace URManager.View.ViewModel
         /// </summary>
         private async void BackupProcess()
         {
-            _settingsViewModel.ItemLogger.InsertNewMessage("start");
+            if (IsBackupChecked is not true) return;
+
+            SettingsViewModel.ItemLogger.InsertNewMessage($"Backup start: {System.DateTime.Now}");
             if (SelectedViewModel is RobotsViewModel robvm)
             {
-                await robvm.BackupProcessAsync(_settingsViewModel);
+                await robvm.BackupProcessAsync(SettingsViewModel);
             }
         }
-
         /// <summary>
         /// Every DispatcherTimer tick the BackupProcess will be executed
         /// </summary>
@@ -153,9 +160,9 @@ namespace URManager.View.ViewModel
         private void CreateTabs()
         {
             SelectedViewModel = new RobotsViewModel("Robots", new SymbolIconSource { Symbol = Symbol.List }, false);
-            _settingsViewModel = new SettingsViewModel("Settings", new SymbolIconSource { Symbol = Symbol.Setting }, false);
+            SettingsViewModel = new SettingsViewModel("Settings", new SymbolIconSource { Symbol = Symbol.Setting }, false);
             Tabs.Add(SelectedViewModel);
-            Tabs.Add(_settingsViewModel);
+            Tabs.Add(SettingsViewModel);
         }
 
 

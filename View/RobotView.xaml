@@ -85,6 +85,11 @@
                       Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                       Backup
             </CheckBox>
+            <CheckBox Margin="0 20 0 0"
+                      IsChecked="{Binding SelectedRobot.Update,
+                      Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                      Remote update (only E-Series)
+            </CheckBox>
         </StackPanel>
     </Grid>
 </Page>
