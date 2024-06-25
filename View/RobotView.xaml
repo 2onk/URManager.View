@@ -16,8 +16,6 @@
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="{x:Bind RobotName,Mode=OneWay}" FontWeight="Bold"/>
                     <TextBlock Text="{x:Bind IP,Mode=OneWay}" Margin="5 0 0 0"/>
-                    <!--<TextBlock Text="update" Margin="5 0 0 0" Opacity="0.5"
-                     Visibility="{x:Bind Backup,Mode=OneWay}"/>-->
                 </StackPanel>
             </DataTemplate>
         </Grid.Resources>

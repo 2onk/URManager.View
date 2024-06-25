@@ -14,7 +14,7 @@ namespace URManager.View.ViewModel
         private TabItems _selectedViewModel;
         private SettingsViewModel _settingsViewModel;
         private DispatcherTimer _timer;
-        private bool _isBackupChecked = false;
+        private bool _isBackupButtonChecked = false;
 
         public ObservableCollection<TabItems> Tabs { get; set; } = new();
 
@@ -50,28 +50,21 @@ namespace URManager.View.ViewModel
             }
         }
 
-        public bool IsBackupChecked
+        public bool IsBackupButtonChecked
         {
-            get => _isBackupChecked;
+            get => _isBackupButtonChecked;
 
             set
             {
-                if (value == _isBackupChecked) return;
-                _isBackupChecked = value;
+                if (value == _isBackupButtonChecked) return;
+                _isBackupButtonChecked = value;
                 RaisePropertyChanged();
             }
-        }
-
-        public bool BackupPressed ()
-        {
-            IsBackupChecked = !IsBackupChecked;
-            return IsBackupChecked;
         }
 
         public DelegateCommand SelectViewModelCommand { get; }
         public DelegateCommand StartBackupProcessCommand { get; }
 
-        //update noch ausarbeiten 
         //public DelegateCommand StartUpdateProcessCommand { get; }
 
         /// <summary>
@@ -100,7 +93,7 @@ namespace URManager.View.ViewModel
         /// <param name="parameter"></param>
         private void StartBackupProcess(object parameter)
         {
-            if (IsBackupChecked is true)
+            if (IsBackupButtonChecked is true)
             {
                 DispatcherTimerSetup(SettingsViewModel.SelectedIntervallItem.Intervall);
 
@@ -117,9 +110,11 @@ namespace URManager.View.ViewModel
             }
         }
 
-        //canexcute noch ausarbeiten
-        //private bool CanStartBackupProcess(object? parameter) => SettingsViewModel.SelectedSavePath != "";
-
+        /// <summary>
+        /// disable backupprocess if update in settings selected
+        /// </summary>
+        /// <param name="parameter"></param>
+        /// <returns>true if possible</returns>
         private bool CanStartBackupProcess(object parameter) => SettingsViewModel.IsBackupSelected is true;
 
         /// <summary>
@@ -136,7 +131,7 @@ namespace URManager.View.ViewModel
         /// </summary>
         private async void BackupProcess()
         {
-            if (IsBackupChecked is not true) return;
+            if (IsBackupButtonChecked is not true) return;
 
             SettingsViewModel.ItemLogger.InsertNewMessage($"Backup start: {System.DateTime.Now}");
             if (SelectedViewModel is RobotsViewModel robvm)

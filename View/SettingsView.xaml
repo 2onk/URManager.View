@@ -35,13 +35,13 @@
                 Command="{Binding BrowseSavePathCommand}"/>
         <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Orientation="Horizontal">
             <RadioButton GroupName="settingsRadioButton" Margin="12" 
-                         IsChecked="{Binding IsBackupSelected, Mode=TwoWay}">Backup</RadioButton>
+                         IsChecked="{Binding IsBackupSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">Backup</RadioButton>
             <RadioButton GroupName="settingsRadioButton" Margin="12" 
-                         IsChecked="{Binding IsUpdateSelected, Mode=TwoWay}">Update</RadioButton>
+                         IsChecked="{Binding IsUpdateSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">Update</RadioButton>
             <ComboBox Margin="10" Width="150" SelectedIndex="1" 
                       ItemsSource="{Binding BackupIntervalls, Mode=OneWay}" 
                       DisplayMemberPath="Name"
-                      SelectedItem="{Binding SelectedIntervallItem, Mode=TwoWay}"
+                      SelectedItem="{Binding SelectedIntervallItem, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                       Visibility="{Binding IsBackupSelected}"/>
         </StackPanel>
 
