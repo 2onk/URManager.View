@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using URManager.Backend.Data;
@@ -120,8 +121,12 @@ namespace URManager.View.ViewModel
 
                 //download via sftp supportfile and delete at remote destination
                 if (sftpclient.Connected) continue;
-                DownloadAndDeleteSupportfile(message, sftpclient, settings);
-                settings.ItemLogger.InsertNewMessage("Supportfile downloaded and deleted at remote host");
+                var success = await DownloadAndDeleteSupportfile(message, sftpclient, settings);
+                if (success is not true) 
+                {
+                    settings.ItemLogger.InsertNewMessage($"Couldnt connect to: {robot.RobotName}, {robot.IP}");
+                }
+                settings.ItemLogger.InsertNewMessage($"Supportfile downloaded and deleted from {robot.RobotName}, {robot.IP}");
 
                 client.Disconnect();
                 settings.ItemLogger.InsertNewMessage($"Disconnected: {robot.RobotName}: {robot.IP}");
@@ -151,12 +156,21 @@ namespace URManager.View.ViewModel
 
                 var sshClient = new ClientSsh(robot.IP);
                 var sftpclient = new ClientSftp(robot.IP);
-                sftpclient.ConnectToSftpServer();
+
+                var success = await sftpclient.ConnectToSftpServer();
+                if (success is not true)
+                {
+                    settings.ItemLogger.InsertNewMessage($"Couldnt connect to remote host. Please check Ip adress of host. Is SSH activated?");
+                    continue;
+                }
+                settings.ItemLogger.InsertNewMessage($"Connected successfully with: {robot.RobotName}, {robot.IP}");
+                settings.ItemLogger.InsertNewMessage($"Uploading: {Path.GetFileName(settings.SelectedSavePath)}");
                 await sftpclient.UploadFile(SshCommands.FilePathMedia,settings.SelectedSavePath);
+                settings.ItemLogger.InsertNewMessage($"Upload finished: {Path.GetFileName(settings.SelectedSavePath)}");
                 sftpclient.Disconnect();
 
                 bool connected =  sshClient.SshConnect();
-                if (connected is not true) return;
+                if (connected is not true) continue;
 
                 var result =  sshClient.ExecuteCommand(SshCommands.RemotePowerOn);
                 sshClient.SshDisconnect();
@@ -179,12 +193,12 @@ namespace URManager.View.ViewModel
         {
             if (_currentRobotIndex == 0)
             {
-                settings.ItemLogger.InsertNewMessage($"Please add robots in the robot list");
+                settings.ItemLogger.InsertNewMessage(LoggerMessages.NoRobotsInList);
                 return false;
             }
             if (settings.SelectedSavePath == "")
             {
-                settings.ItemLogger.InsertNewMessage($"Please select a save path before");
+                settings.ItemLogger.InsertNewMessage(LoggerMessages.MissingSavePath);
                 return false;
             }
             return true;
@@ -234,10 +248,11 @@ namespace URManager.View.ViewModel
         /// <param name="sftclient"></param>
         /// <param name="settings"></param>
         /// <returns>true if succeded</returns>
-        private bool DownloadAndDeleteSupportfile(string message, ClientSftp sftclient, SettingsViewModel settings)
+        private async Task<bool> DownloadAndDeleteSupportfile(string message, ClientSftp sftclient, SettingsViewModel settings)
         {
             var filename = GetSupportFileName(message);
-            sftclient.ConnectToSftpServer();
+            var success = await sftclient.ConnectToSftpServer();
+            if (success is not true) return false;
             sftclient.DownloadFile(DashboardCommands.Support_file_savepath + filename, settings.SelectedSavePath + "\\" + filename);
             sftclient.DeleteFile(DashboardCommands.Support_file_savepath + filename);
             sftclient.Disconnect();
