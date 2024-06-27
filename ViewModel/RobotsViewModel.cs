@@ -80,12 +80,7 @@ namespace URManager.View.ViewModel
         /// <returns></returns>
         public async Task BackupProcessAsync(SettingsViewModel settings)
         {
-            if (_currentRobotIndex == 0) return;
-            if (settings.SelectedSavePath == "")
-            {
-                settings.ItemLogger.InsertNewMessage($"Please select a save path before");
-                return;
-            }
+            if(CheckRoutine(settings) is not true) return;
 
             //count successfull supportfile downloads
             int robotCounter = 0;
@@ -101,7 +96,7 @@ namespace URManager.View.ViewModel
                 }
                     
                 var client = new ClientTCP(robot.IP);
-                var sftclient = new ClientSftp(robot.IP);
+                var sftpclient = new ClientSftp(robot.IP);
 
                 var connected = await ConnectToDashboardServerAsync(robot, settings, client);
                 if (!connected) continue;
@@ -124,8 +119,8 @@ namespace URManager.View.ViewModel
                 if (message.Contains("Error")) continue;
 
                 //download via sftp supportfile and delete at remote destination
-                if (sftclient.Connected) continue;
-                DownloadAndDeleteSupportfile(message, sftclient, settings);
+                if (sftpclient.Connected) continue;
+                DownloadAndDeleteSupportfile(message, sftpclient, settings);
                 settings.ItemLogger.InsertNewMessage("Supportfile downloaded and deleted at remote host");
 
                 client.Disconnect();
@@ -137,10 +132,36 @@ namespace URManager.View.ViewModel
             settings.ItemLogger.InsertNewMessage($"Finished getting supportfiles from chosen robots: {robotCounter}");
         }
 
-        //public void UpdateProcess(SettingsViewModel settings)
-        //{
+        public async Task UpdateProcessAsync(SettingsViewModel settings)
+        {
+            if (CheckRoutine(settings) is not true) return;
 
-        //}
+            //count successfull supportfile downloads
+            //int robotCounter = 0;
+
+            foreach (var robot in Robots)
+            {
+                if (robot.IP is null || robot.Update == false) continue;
+
+                if (!CheckIP(robot.IP))
+                {
+                    settings.ItemLogger.InsertNewMessage($"{robot.RobotName}: {robot.IP} please check IP");
+                    continue;
+                }
+
+                var sshClient = new ClientSsh(robot.IP);
+                var sftpclient = new ClientSftp(robot.IP);
+                sftpclient.ConnectToSftpServer();
+                await sftpclient.UploadFile(SshCommands.FilePathMedia,settings.SelectedSavePath);
+                sftpclient.Disconnect();
+
+                bool connected =  sshClient.SshConnect();
+                if (connected is not true) return;
+
+                var result =  sshClient.ExecuteCommand(SshCommands.RemotePowerOn);
+                sshClient.SshDisconnect();
+            }
+        }
 
         /// <summary>
         /// Check polyscope version for CB3 series higher than 3.13 and CB5 higher than 5.8
@@ -152,6 +173,21 @@ namespace URManager.View.ViewModel
             //check for CB3
             if (polyscopeVersion[0] == '3') return PolyscopeSupportfileCheckCB3(polyscopeVersion);
             return PolyscopeSupportfileCheckCB5(polyscopeVersion);
+        }
+
+        private bool CheckRoutine(SettingsViewModel settings)
+        {
+            if (_currentRobotIndex == 0)
+            {
+                settings.ItemLogger.InsertNewMessage($"Please add robots in the robot list");
+                return false;
+            }
+            if (settings.SelectedSavePath == "")
+            {
+                settings.ItemLogger.InsertNewMessage($"Please select a save path before");
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -336,7 +372,7 @@ namespace URManager.View.ViewModel
         {
             if (robot.IP is null)
             {
-                settings.ItemLogger.InsertNewMessage("Please check IP adress of Robots");
+                settings.ItemLogger.InsertNewMessage($"Please check IP adress of Robot: {robot.RobotName}");
                 return false;
             }
 

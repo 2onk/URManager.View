@@ -15,6 +15,7 @@ namespace URManager.View.ViewModel
         private SettingsViewModel _settingsViewModel;
         private DispatcherTimer _timer;
         private bool _isBackupButtonChecked = false;
+        private bool _isUpdateButtonChecked = false;
 
         public ObservableCollection<TabItems> Tabs { get; set; } = new();
 
@@ -24,7 +25,7 @@ namespace URManager.View.ViewModel
             _timer = new DispatcherTimer();
             SelectViewModelCommand = new DelegateCommand(SelectViewModel);
             StartBackupProcessCommand = new DelegateCommand(StartBackupProcess, CanStartBackupProcess);
-            //StartUpdateProcessCommand = new DelegateCommand(StartUpdateProcess);
+            StartUpdateProcessCommand = new DelegateCommand(StartUpdateProcess);
         }
 
         public TabItems SelectedViewModel
@@ -62,10 +63,22 @@ namespace URManager.View.ViewModel
             }
         }
 
+        public bool IsUpdateButtonChecked
+        {
+            get => _isUpdateButtonChecked;
+
+            set
+            {
+                if (value == _isUpdateButtonChecked) return;
+                _isUpdateButtonChecked = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public DelegateCommand SelectViewModelCommand { get; }
         public DelegateCommand StartBackupProcessCommand { get; }
 
-        //public DelegateCommand StartUpdateProcessCommand { get; }
+        public DelegateCommand StartUpdateProcessCommand { get; }
 
         /// <summary>
         /// Provides dummy robot data to listview
@@ -133,7 +146,7 @@ namespace URManager.View.ViewModel
         {
             if (IsBackupButtonChecked is not true) return;
 
-            SettingsViewModel.ItemLogger.InsertNewMessage($"Backup start: {System.DateTime.Now}");
+            SettingsViewModel.ItemLogger.InsertNewMessage($"Backup started: {System.DateTime.Now}");
             if (SelectedViewModel is RobotsViewModel robvm)
             {
                 await robvm.BackupProcessAsync(SettingsViewModel);
@@ -161,9 +174,15 @@ namespace URManager.View.ViewModel
         }
 
 
-        //private void StartUpdateProcess(object? obj)
-        //{
-        //    RobotsViewModel.UpdateProcess(_settingsViewModel);
-        //}
+        private async void StartUpdateProcess(object parameter)
+        {
+            if (IsUpdateButtonChecked is not true) return;
+
+            SettingsViewModel.ItemLogger.InsertNewMessage($"Robot update started: {System.DateTime.Now}");
+            if (SelectedViewModel is RobotsViewModel robvm)
+            {
+                await robvm.UpdateProcessAsync(SettingsViewModel);
+            }
+        }
     }
 }

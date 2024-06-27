@@ -47,6 +47,15 @@
                     <TextBlock Text="Start Backup" Margin="8 0 0 0 "/>
                 </StackPanel>
             </ToggleButton>
+            <ToggleButton x:Name="UpdateButton" Margin="10" Width="150" 
+                          IsChecked="{x:Bind ViewModel.IsUpdateButtonChecked, Mode=TwoWay}"
+                          Command="{x:Bind ViewModel.StartUpdateProcessCommand}"
+                          IsEnabled="{x:Bind ViewModel.SettingsViewModel.IsUpdateSelected, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                <StackPanel Orientation="Horizontal">
+                    <SymbolIcon Symbol="PostUpdate"/>
+                    <TextBlock Text="Update Robots" Margin="8 0 0 0 "/>
+                </StackPanel>
+            </ToggleButton>
         </StackPanel>
 
         <!--Darkmode button-->
