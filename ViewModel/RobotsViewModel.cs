@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -10,6 +12,7 @@ using URManager.Backend.Model;
 using URManager.Backend.Net;
 using URManager.Backend.ViewModel;
 using URManager.View.Command;
+using Windows.Globalization.DateTimeFormatting;
 
 namespace URManager.View.ViewModel
 {
@@ -18,6 +21,7 @@ namespace URManager.View.ViewModel
         private readonly IRobotDataProvider _robotDataProvider;
         private RobotItemViewModel _selectedRobot;
         private int _currentRobotIndex = 0;
+
 
         public RobotsViewModel(object name, object icon, bool isClosable) : base(name, icon, isClosable)
         {
@@ -134,7 +138,7 @@ namespace URManager.View.ViewModel
                 robotCounter++;
             }
 
-            settings.ItemLogger.InsertNewMessage($"Finished getting supportfiles from chosen robots: {robotCounter}");
+            settings.ItemLogger.InsertNewMessage($"Finished getting supportfiles from all robots: {robotCounter}");
         }
 
         public async Task UpdateProcessAsync(SettingsViewModel settings)
@@ -142,7 +146,7 @@ namespace URManager.View.ViewModel
             if (CheckRoutine(settings) is not true) return;
 
             //count successfull supportfile downloads
-            //int robotCounter = 0;
+            int robotCounter = 0;
 
             foreach (var robot in Robots)
             {
@@ -160,7 +164,7 @@ namespace URManager.View.ViewModel
                 var success = await sftpclient.ConnectToSftpServer();
                 if (success is not true)
                 {
-                    settings.ItemLogger.InsertNewMessage($"Couldnt connect to remote host. Please check Ip adress of host. Is SSH activated?");
+                    settings.ItemLogger.InsertNewMessage($"Couldnt connect to remote host: {robot.RobotName}, {robot.IP} Please check Ip adress of host. Is SFTP blocked?");
                     continue;
                 }
                 settings.ItemLogger.InsertNewMessage($"Connected successfully with: {robot.RobotName}, {robot.IP}");
@@ -170,11 +174,49 @@ namespace URManager.View.ViewModel
                 sftpclient.Disconnect();
 
                 bool connected =  sshClient.SshConnect();
-                if (connected is not true) continue;
+                if (connected is not true) 
+                {
+                    settings.ItemLogger.InsertNewMessage($"Couldnt connect to remote host: {robot.RobotName}, {robot.IP} Please check Ip adress of host. Is SSH activated?");
+                    continue; 
+                }
 
-                var result =  sshClient.ExecuteCommand(SshCommands.RemotePowerOn);
+                //send update polyscope
+                var result = sshClient.ExecuteCommand(SshCommands.UpdatePolyscope + Path.GetFileName(settings.SelectedSavePath));
+                settings.ItemLogger.InsertNewMessage($"Started update: {robot.RobotName}, {robot.IP}");
+
+                //wait until robot finished or waiting time runs out
+                var trycounter = 0;
+                var dashboardConnected = false;
+                while(trycounter <= 7 && dashboardConnected is not true)
+                {
+                    dashboardConnected = await CheckIfRobotFinishedUpdate(robot.IP);
+                    trycounter++;
+                }
+
+                if (dashboardConnected is not true || trycounter > 7)
+                {
+                    settings.ItemLogger.InsertNewMessage($"Couldnt check if robot update is finished due to time out error: {robot.RobotName}, {robot.IP}");
+                    continue;
+                }
+
+                //power on -> IDLE mode to install firmware 
+                sshClient.ExecuteCommand(SshCommands.RemotePowerOn);
+                sshClient.ExecuteCommand(SshCommands.DeleteUpdateFile+Path.GetFileName(settings.SelectedSavePath));
                 sshClient.SshDisconnect();
+                settings.ItemLogger.InsertNewMessage($"Robot update is finished: {robot.RobotName}, {robot.IP}");
+                robotCounter++;
             }
+            settings.ItemLogger.InsertNewMessage($"Finished updating robots: {robotCounter}");
+        }
+
+        private async Task<bool> CheckIfRobotFinishedUpdate(string ip)
+        {
+            await Task.Delay(120000);
+            var clientTcp = new ClientTCP(ip);
+            var result = await clientTcp.ConnectToServerAsync();
+            clientTcp.Disconnect();
+            if (result is not true) return false;
+            return true;
         }
 
         /// <summary>

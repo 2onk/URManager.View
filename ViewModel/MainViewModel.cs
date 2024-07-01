@@ -113,7 +113,7 @@ namespace URManager.View.ViewModel
                 //call first time backup process
                 BackupProcess();
 
-                //backup every day
+                //backup chosen Intervall
                 _timer.Start();
             }
             else

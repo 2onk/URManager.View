@@ -142,7 +142,7 @@ namespace URManager.View.ViewModel
         /// </summary>
         /// <param name="parameter"></param>
         /// <param name="filter"></param>
-        private async Task BrowseUpdateFile(object parameter, string filter = ".urp")
+        private async Task BrowseUpdateFile(object parameter, string filter = ".urup")
         {
             string savepath = await FilePicker.OpenAsync(filter);
 
