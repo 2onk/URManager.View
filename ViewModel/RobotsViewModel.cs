@@ -189,8 +189,6 @@ namespace URManager.View.ViewModel
                 sftpclient.Disconnect();
 
                 //send update polyscope
-                //sshClient.ExecuteCommand($"{SshCommands.MoveFile}{SshCommands.FilePathPrograms}{Path.GetFileName(settings.SelectedSavePath)} {usbCheck}");
-                //sshClient.ExecuteCommand($"{SshCommands.DeleteUpdateFile}{SshCommands.FilePathPrograms}{Path.GetFileName(settings.SelectedSavePath)}");
                 settings.ItemLogger.InsertNewMessage($"Started update: {robot.RobotName}, {robot.IP}");
                 var result = sshClient.ExecuteCommand($"{SshCommands.UpdatePolyscope}{usbCheck}{Path.GetFileName(settings.SelectedSavePath)}");
                 sshClient.SshDisconnect();
