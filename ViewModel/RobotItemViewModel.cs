@@ -63,7 +63,7 @@ namespace URManager.View.ViewModel
         [JsonIgnore]
         public string AdminPassword
         {
-            private get => _model.AdminPassword;
+            get => _model.AdminPassword;
             set
             {
                 if (value == _model.AdminPassword) return;

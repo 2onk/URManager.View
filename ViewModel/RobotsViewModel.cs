@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Renci.SshNet;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -98,10 +99,20 @@ namespace URManager.View.ViewModel
                 }
                     
                 var client = new ClientTCP(robot.IP);
-                var sftpclient = new ClientSftp(robot.IP);
+                var sftpclient = new ClientSftp(robot.IP,password: robot.AdminPassword);
 
                 var connected = await ConnectToDashboardServerAsync(robot, settings, client);
-                if (!connected) continue;
+                if (!connected)
+                {
+                    settings.ItemLogger.InsertNewMessage($"{robot.RobotName}, {robot.IP}: Couldnt connect to Dashboard Server");
+                    continue;
+                }
+                connected = await sftpclient.ConnectToSftpServer();
+                if (!connected)
+                {
+                    settings.ItemLogger.InsertNewMessage($"{robot.RobotName}, {robot.IP}: Couldnt connect to Sftp Server. Please Check password");
+                    continue;
+                }
 
                 //check polyscope version for supportfile support. CB3 > 3.13 and CB5 > 5.8
                 var versionCheck = await PolyscopeVersionCheck(client);
@@ -121,11 +132,11 @@ namespace URManager.View.ViewModel
                 if (message.Contains("Error")) continue;
 
                 //download via sftp supportfile and delete at remote destination
-                if (sftpclient.Connected) continue;
-                var success = await DownloadAndDeleteSupportfile(message, sftpclient, settings);
+                var success = DownloadAndDeleteSupportfile(message, sftpclient, settings);
                 if (success is not true) 
                 {
                     settings.ItemLogger.InsertNewMessage($"Couldnt connect to: {robot.RobotName}, {robot.IP}");
+                    continue;
                 }
                 settings.ItemLogger.InsertNewMessage($"Supportfile downloaded and deleted from {robot.RobotName}, {robot.IP}");
 
@@ -144,6 +155,7 @@ namespace URManager.View.ViewModel
 
             //count successfull updates
             int robotCounter = 0;
+            List<RobotItemViewModel> _robots = new List<RobotItemViewModel>();
 
             foreach (var robot in Robots)
             {
@@ -155,11 +167,12 @@ namespace URManager.View.ViewModel
                     continue;
                 }
 
-                var sshClient = new ClientSsh(robot.IP);
-                bool connected = sshClient.SshConnect();
+                settings.ItemLogger.InsertNewMessage($"Trying to connect to: {robot.RobotName}, {robot.IP}");
+                var sshClient = new ClientSsh(robot.IP,password: robot.AdminPassword);
+                bool connected = await sshClient.SshConnect();
                 if (connected is not true)
                 {
-                    settings.ItemLogger.InsertNewMessage($"Couldnt connect to remote host: {robot.RobotName}, {robot.IP} Please check Ip adress of host. Is SSH activated?");
+                    settings.ItemLogger.InsertNewMessage($"Couldnt connect to remote host: {robot.RobotName}, {robot.IP} Please check Ip adress of host. Is SSH activated? Wrong password?");
                     continue;
                 }
 
@@ -170,7 +183,7 @@ namespace URManager.View.ViewModel
                     continue;
                 }
 
-                var sftpclient = new ClientSftp(robot.IP);
+                var sftpclient = new ClientSftp(robot.IP,password: robot.AdminPassword);
                 var success = await sftpclient.ConnectToSftpServer();
                 if (success is not true)
                 {
@@ -189,42 +202,49 @@ namespace URManager.View.ViewModel
                 settings.ItemLogger.InsertNewMessage($"Started update: {robot.RobotName}, {robot.IP}");
                 var result = sshClient.ExecuteCommand($"{SshCommands.UpdatePolyscope}{usbCheck}{Path.GetFileName(settings.SelectedSavePath)}");
                 sshClient.SshDisconnect();
-
-                //wait until robot finished or waiting time runs out
-                var trycounter = 0;
-                var dashboardConnected = false;
-                while(trycounter <= 7 && dashboardConnected is not true)
-                {
-                    dashboardConnected = await CheckIfRobotFinishedUpdate(robot.IP);
-                    trycounter++;
-                }
-
-                if (dashboardConnected is not true || trycounter > 7)
-                {
-                    settings.ItemLogger.InsertNewMessage($"Couldnt check if robot update is finished due to time out error: {robot.RobotName}, {robot.IP}");
-                    continue;
-                }
-
-                connected = sshClient.SshConnect();
-                if (connected is not true)
-                {
-                    settings.ItemLogger.InsertNewMessage($"Couldnt connect to remote host: {robot.RobotName}, {robot.IP} Please check Ip adress of host. Is SSH activated?");
-                    continue;
-                }
-
-                usbCheck = CheckUsbConnected(sshClient);
-                if (usbCheck == "false")
-                {
-                    settings.ItemLogger.InsertNewMessage($"Please connect an USB stick to the robot otherwise the update cant be executed: {robot.RobotName}, {robot.IP}");
-                    continue;
-                }
-
-                //power on -> IDLE mode to install firmware 
-                sshClient.ExecuteCommand(SshCommands.RemotePowerOn);
-                sshClient.ExecuteCommand("rm "+ usbCheck + Path.GetFileName(settings.SelectedSavePath));
-                sshClient.SshDisconnect();
-                settings.ItemLogger.InsertNewMessage($"Robot update is finished: {robot.RobotName}, {robot.IP}");
+                _robots.Add(robot); 
                 robotCounter++;
+            }
+            if (_robots.Count > 0)
+            {
+                foreach (var robot in _robots)
+                {
+                    //wait until robot finished or waiting time runs out
+                    var trycounter = 0;
+                    var dashboardConnected = false;
+                    while (trycounter <= 7 && dashboardConnected is not true)
+                    {
+                        dashboardConnected = await CheckIfRobotFinishedUpdate(robot.IP);
+                        trycounter++;
+                    }
+
+                    if (dashboardConnected is not true || trycounter > 7)
+                    {
+                        settings.ItemLogger.InsertNewMessage($"Couldnt check if robot update is finished due to time out error: {robot.RobotName}, {robot.IP}");
+                        continue;
+                    }
+                    var sshClient = new ClientSsh(robot.IP, password: robot.AdminPassword);
+                    bool connected = await sshClient.SshConnect();
+                    if (connected is not true)
+                    {
+                        settings.ItemLogger.InsertNewMessage($"Couldnt connect to remote host: {robot.RobotName}, {robot.IP} Please check Ip adress of host. Is SSH activated?");
+                        continue;
+                    }
+
+                    var usbCheck = CheckUsbConnected(sshClient);
+                    usbCheck = CheckUsbConnected(sshClient);
+                    if (usbCheck == "false")
+                    {
+                        settings.ItemLogger.InsertNewMessage($"Please connect an USB stick to the robot otherwise the update cant be executed: {robot.RobotName}, {robot.IP}");
+                        continue;
+                    }
+
+                    //power on -> IDLE mode to install firmware 
+                    sshClient.ExecuteCommand(SshCommands.RemotePowerOn);
+                    sshClient.ExecuteCommand("rm " + usbCheck + Path.GetFileName(settings.SelectedSavePath));
+                    sshClient.SshDisconnect();
+                    settings.ItemLogger.InsertNewMessage($"Robot update is finished: {robot.RobotName}, {robot.IP}");
+                }
             }
             settings.ItemLogger.InsertNewMessage($"Finished updating robots: {robotCounter}");
         }
@@ -318,11 +338,10 @@ namespace URManager.View.ViewModel
         /// <param name="sftclient"></param>
         /// <param name="settings"></param>
         /// <returns>true if succeded</returns>
-        private async Task<bool> DownloadAndDeleteSupportfile(string message, ClientSftp sftclient, SettingsViewModel settings)
+        private bool DownloadAndDeleteSupportfile(string message, ClientSftp sftclient, SettingsViewModel settings)
         {
             var filename = GetSupportFileName(message);
-            var success = await sftclient.ConnectToSftpServer();
-            if (success is not true) return false;
+            if (sftclient.Connected is not true) return false;
             sftclient.DownloadFile(DashboardCommands.Support_file_savepath + filename, settings.SelectedSavePath + "\\" + filename);
             sftclient.DeleteFile(DashboardCommands.Support_file_savepath + filename);
             sftclient.Disconnect();
