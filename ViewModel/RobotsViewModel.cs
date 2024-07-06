@@ -145,7 +145,7 @@ namespace URManager.View.ViewModel
         {
             if (CheckRoutine(settings) is not true) return;
 
-            //count successfull supportfile downloads
+            //count successfull updates
             int robotCounter = 0;
 
             foreach (var robot in Robots)
@@ -159,8 +159,21 @@ namespace URManager.View.ViewModel
                 }
 
                 var sshClient = new ClientSsh(robot.IP);
-                var sftpclient = new ClientSftp(robot.IP);
+                bool connected = sshClient.SshConnect();
+                if (connected is not true)
+                {
+                    settings.ItemLogger.InsertNewMessage($"Couldnt connect to remote host: {robot.RobotName}, {robot.IP} Please check Ip adress of host. Is SSH activated?");
+                    continue;
+                }
 
+                var usbCheck = CheckUsbConnected(sshClient);
+                if (usbCheck == "false")
+                {
+                    settings.ItemLogger.InsertNewMessage($"Please connect an USB stick to the robot otherwise the update cant be executed: {robot.RobotName}, {robot.IP}");
+                    continue;
+                }
+
+                var sftpclient = new ClientSftp(robot.IP);
                 var success = await sftpclient.ConnectToSftpServer();
                 if (success is not true)
                 {
@@ -169,20 +182,18 @@ namespace URManager.View.ViewModel
                 }
                 settings.ItemLogger.InsertNewMessage($"Connected successfully with: {robot.RobotName}, {robot.IP}");
                 settings.ItemLogger.InsertNewMessage($"Uploading: {Path.GetFileName(settings.SelectedSavePath)}");
-                await sftpclient.UploadFile(SshCommands.FilePathMedia,settings.SelectedSavePath);
+
+                sshClient.ExecuteCommand("mount -o remount,async " + usbCheck);
+                await sftpclient.UploadFile(usbCheck, settings.SelectedSavePath);
                 settings.ItemLogger.InsertNewMessage($"Upload finished: {Path.GetFileName(settings.SelectedSavePath)}");
                 sftpclient.Disconnect();
 
-                bool connected =  sshClient.SshConnect();
-                if (connected is not true) 
-                {
-                    settings.ItemLogger.InsertNewMessage($"Couldnt connect to remote host: {robot.RobotName}, {robot.IP} Please check Ip adress of host. Is SSH activated?");
-                    continue; 
-                }
-
                 //send update polyscope
-                var result = sshClient.ExecuteCommand(SshCommands.UpdatePolyscope + Path.GetFileName(settings.SelectedSavePath));
+                //sshClient.ExecuteCommand($"{SshCommands.MoveFile}{SshCommands.FilePathPrograms}{Path.GetFileName(settings.SelectedSavePath)} {usbCheck}");
+                //sshClient.ExecuteCommand($"{SshCommands.DeleteUpdateFile}{SshCommands.FilePathPrograms}{Path.GetFileName(settings.SelectedSavePath)}");
                 settings.ItemLogger.InsertNewMessage($"Started update: {robot.RobotName}, {robot.IP}");
+                var result = sshClient.ExecuteCommand($"{SshCommands.UpdatePolyscope}{usbCheck}{Path.GetFileName(settings.SelectedSavePath)}");
+                sshClient.SshDisconnect();
 
                 //wait until robot finished or waiting time runs out
                 var trycounter = 0;
@@ -199,14 +210,36 @@ namespace URManager.View.ViewModel
                     continue;
                 }
 
+                connected = sshClient.SshConnect();
+                if (connected is not true)
+                {
+                    settings.ItemLogger.InsertNewMessage($"Couldnt connect to remote host: {robot.RobotName}, {robot.IP} Please check Ip adress of host. Is SSH activated?");
+                    continue;
+                }
+
+                usbCheck = CheckUsbConnected(sshClient);
+                if (usbCheck == "false")
+                {
+                    settings.ItemLogger.InsertNewMessage($"Please connect an USB stick to the robot otherwise the update cant be executed: {robot.RobotName}, {robot.IP}");
+                    continue;
+                }
+
                 //power on -> IDLE mode to install firmware 
                 sshClient.ExecuteCommand(SshCommands.RemotePowerOn);
-                sshClient.ExecuteCommand(SshCommands.DeleteUpdateFile+Path.GetFileName(settings.SelectedSavePath));
+                sshClient.ExecuteCommand("rm "+ usbCheck + Path.GetFileName(settings.SelectedSavePath));
                 sshClient.SshDisconnect();
                 settings.ItemLogger.InsertNewMessage($"Robot update is finished: {robot.RobotName}, {robot.IP}");
                 robotCounter++;
             }
             settings.ItemLogger.InsertNewMessage($"Finished updating robots: {robotCounter}");
+        }
+
+        private string CheckUsbConnected(ClientSsh sshClient)
+        {
+            var answer = sshClient.ExecuteCommand(SshCommands.GetConnectedUsb);
+            if (answer.Contains("media") is not true) return "false";
+            answer = answer.TrimEnd(answer[answer.Length - 1]);
+            return answer + "/";
         }
 
         private async Task<bool> CheckIfRobotFinishedUpdate(string ip)
