@@ -88,6 +88,9 @@
                       Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                       Remote update (only E-Series)
             </CheckBox>
+            <PasswordBox x:Name="passwordBox" Margin="0 20 0 0" Width="200" MaxLength="20" HorizontalAlignment="Left" Header="Admin Password:" 
+                         Password="{Binding SelectedRobot.AdminPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+            </PasswordBox>
         </StackPanel>
     </Grid>
 </Page>

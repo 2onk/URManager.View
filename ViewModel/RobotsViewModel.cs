@@ -1,6 +1,4 @@
-﻿using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -12,7 +10,6 @@ using URManager.Backend.Model;
 using URManager.Backend.Net;
 using URManager.Backend.ViewModel;
 using URManager.View.Command;
-using Windows.Globalization.DateTimeFormatting;
 
 namespace URManager.View.ViewModel
 {

@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text.Json.Serialization;
 using URManager.Backend.Model;
 using URManager.Backend.ViewModel;
 
@@ -56,6 +57,18 @@ namespace URManager.View.ViewModel
                 if (value == _model.Update) return;
                 _model.Update = value;
                 RaisePropertyChanged(nameof(Update));
+            }
+        }
+
+        [JsonIgnore]
+        public string AdminPassword
+        {
+            private get => _model.AdminPassword;
+            set
+            {
+                if (value == _model.AdminPassword) return;
+                _model.AdminPassword = value;
+                RaisePropertyChanged(nameof(AdminPassword));
             }
         }
     }
