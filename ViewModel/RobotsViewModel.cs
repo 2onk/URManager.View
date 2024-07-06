@@ -200,10 +200,17 @@ namespace URManager.View.ViewModel
 
                 //send update polyscope
                 settings.ItemLogger.InsertNewMessage($"Started update: {robot.RobotName}, {robot.IP}");
-                var result = sshClient.ExecuteCommand($"{SshCommands.UpdatePolyscope}{usbCheck}{Path.GetFileName(settings.SelectedSavePath)}");
-                sshClient.SshDisconnect();
-                _robots.Add(robot); 
-                robotCounter++;
+                try
+                {
+                    await sshClient.ExecuteCommandWithoutResult($"{SshCommands.UpdatePolyscope}{usbCheck}{Path.GetFileName(settings.SelectedSavePath)}");
+                }
+                catch 
+                {
+                    sshClient.SshDisconnect();
+                    _robots.Add(robot);
+                    robotCounter++;
+                    continue;
+                }
             }
             if (_robots.Count > 0)
             {
@@ -214,6 +221,7 @@ namespace URManager.View.ViewModel
                     var dashboardConnected = false;
                     while (trycounter <= 7 && dashboardConnected is not true)
                     {
+                        settings.ItemLogger.InsertNewMessage($"Check if robot finished update: {robot.RobotName}, {robot.IP}");
                         dashboardConnected = await CheckIfRobotFinishedUpdate(robot.IP);
                         trycounter++;
                     }
@@ -240,8 +248,8 @@ namespace URManager.View.ViewModel
                     }
 
                     //power on -> IDLE mode to install firmware 
-                    sshClient.ExecuteCommand(SshCommands.RemotePowerOn);
-                    sshClient.ExecuteCommand("rm " + usbCheck + Path.GetFileName(settings.SelectedSavePath));
+                    await sshClient.ExecuteCommandWithoutResult(SshCommands.RemotePowerOn);
+                    await sshClient.ExecuteCommandWithoutResult("rm " + usbCheck + Path.GetFileName(settings.SelectedSavePath));
                     sshClient.SshDisconnect();
                     settings.ItemLogger.InsertNewMessage($"Robot update is finished: {robot.RobotName}, {robot.IP}");
                 }
