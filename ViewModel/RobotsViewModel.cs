@@ -200,17 +200,11 @@ namespace URManager.View.ViewModel
 
                 //send update polyscope
                 settings.ItemLogger.InsertNewMessage($"Started update: {robot.RobotName}, {robot.IP}");
-                try
-                {
-                    await sshClient.ExecuteCommandWithoutResult($"{SshCommands.UpdatePolyscope}{usbCheck}{Path.GetFileName(settings.SelectedSavePath)}");
-                }
-                catch 
-                {
-                    sshClient.SshDisconnect();
-                    _robots.Add(robot);
-                    robotCounter++;
-                    continue;
-                }
+                sshClient.ExecuteCommandAsync($"{SshCommands.UpdatePolyscope}{usbCheck}{Path.GetFileName(settings.SelectedSavePath)}");
+
+                sshClient.SshDisconnect();
+                _robots.Add(robot);
+                robotCounter++;
             }
             if (_robots.Count > 0)
             {
@@ -248,8 +242,9 @@ namespace URManager.View.ViewModel
                     }
 
                     //power on -> IDLE mode to install firmware 
-                    await sshClient.ExecuteCommandWithoutResult(SshCommands.RemotePowerOn);
-                    await sshClient.ExecuteCommandWithoutResult("rm " + usbCheck + Path.GetFileName(settings.SelectedSavePath));
+                    sshClient.ExecuteCommand(SshCommands.RemotePowerOn);
+                    sshClient.ExecuteCommandAsync("rm " + usbCheck + Path.GetFileName(settings.SelectedSavePath));
+                    sshClient.ExecuteCommandAsync("rm " + usbCheck + SshCommands.DeleteInstalSh);
                     sshClient.SshDisconnect();
                     settings.ItemLogger.InsertNewMessage($"Robot update is finished: {robot.RobotName}, {robot.IP}");
                 }
