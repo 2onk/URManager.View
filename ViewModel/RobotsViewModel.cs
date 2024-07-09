@@ -120,7 +120,11 @@ namespace URManager.View.ViewModel
                 {
                     settings.ItemLogger.InsertNewMessage($"{robot.RobotName}, {robot.IP}: is not supportfile compatible");
                     continue;
-                }  
+                }
+
+                //get robot serial number to create if not existend saving directory
+                var robotSerial = await GetRobotSerial(client);
+                var savepath = GetRobotSavingPath(robotSerial, settings.SelectedSavePath);
 
                 //generate supportfile with dashboardcommands
                 settings.ItemLogger.InsertNewMessage($"Sending Dashboardcommand: {DashboardCommands.Generate_support_file}{DashboardCommands.Support_file_savepath}");
@@ -132,7 +136,7 @@ namespace URManager.View.ViewModel
                 if (message.Contains("Error")) continue;
 
                 //download via sftp supportfile and delete at remote destination
-                var success = DownloadAndDeleteSupportfile(message, sftpclient, settings);
+                var success = DownloadAndDeleteSupportfile(message, sftpclient, savepath);
                 if (success is not true) 
                 {
                     settings.ItemLogger.InsertNewMessage($"Couldnt connect to: {robot.RobotName}, {robot.IP}");
@@ -251,7 +255,11 @@ namespace URManager.View.ViewModel
             }
             settings.ItemLogger.InsertNewMessage($"Finished updating robots: {robotCounter}");
         }
-
+        /// <summary>
+        /// get connected usb port path 
+        /// </summary>
+        /// <param name="sshClient"></param>
+        /// <returns>usb port path as string</returns>
         private string CheckUsbConnected(ClientSsh sshClient)
         {
             var answer = sshClient.ExecuteCommand(SshCommands.GetConnectedUsb);
@@ -259,7 +267,11 @@ namespace URManager.View.ViewModel
             answer = answer.TrimEnd(answer[answer.Length - 1]);
             return answer + "/";
         }
-
+        /// <summary>
+        /// connect to dashboard server and with 2 minutes sleep timer. if dashboard available, robot is fully booted. 
+        /// </summary>
+        /// <param name="ip"></param>
+        /// <returns>true if succeeded</returns>
         private async Task<bool> CheckIfRobotFinishedUpdate(string ip)
         {
             await Task.Delay(120000);
@@ -282,6 +294,44 @@ namespace URManager.View.ViewModel
             return PolyscopeSupportfileCheckCB5(polyscopeVersion);
         }
 
+        /// <summary>
+        /// get robot serial number via dashboard server
+        /// </summary>
+        /// <param name="client"></param>
+        /// <returns>serialnumber as string</returns>
+        private async Task<string> GetRobotSerial(ClientTCP client)
+        {
+            SendDashboardCommand(DashboardCommands.Get_serial_number, client);
+            string robotSerial = await ReadDashboardMessage(client);
+            robotSerial = robotSerial.TrimEnd(robotSerial[robotSerial.Length - 1]);
+            return robotSerial;
+        }
+
+        /// <summary>
+        /// create new directory if directory for robote with serialnumber doesnt exist
+        /// </summary>
+        /// <param name="robotSerial"></param>
+        /// <param name="savepath"></param>
+        /// <returns>string as path</returns>
+        private string GetRobotSavingPath(string robotSerial, string savepath)
+        {
+            savepath = savepath + "\\"+ robotSerial;
+            if (Directory.Exists(savepath))
+            {
+                return savepath;
+            }
+            else
+            {
+                Directory.CreateDirectory(savepath);
+                return savepath;
+            }
+        }
+
+        /// <summary>
+        /// checkroutine if any robots in list or savepath chosen
+        /// </summary>
+        /// <param name="settings"></param>
+        /// <returns></returns>
         private bool CheckRoutine(SettingsViewModel settings)
         {
             if (_currentRobotIndex == 0)
@@ -341,11 +391,11 @@ namespace URManager.View.ViewModel
         /// <param name="sftclient"></param>
         /// <param name="settings"></param>
         /// <returns>true if succeded</returns>
-        private bool DownloadAndDeleteSupportfile(string message, ClientSftp sftclient, SettingsViewModel settings)
+        private bool DownloadAndDeleteSupportfile(string message, ClientSftp sftclient, string savePath)
         {
             var filename = GetSupportFileName(message);
             if (sftclient.Connected is not true) return false;
-            sftclient.DownloadFile(DashboardCommands.Support_file_savepath + filename, settings.SelectedSavePath + "\\" + filename);
+            sftclient.DownloadFile(DashboardCommands.Support_file_savepath + filename, savePath + "\\" + filename);
             sftclient.DeleteFile(DashboardCommands.Support_file_savepath + filename);
             sftclient.Disconnect();
             return true;

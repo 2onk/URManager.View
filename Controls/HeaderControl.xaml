@@ -12,8 +12,8 @@
     <Grid Background="{StaticResource HeaderBackgroundBrush}">
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
             <Image Source="/Images/logo.png" 
-                   Width="120" 
-                   Margin="5"/>
+                   Width="100" 
+                   Margin="0 5 20 5"/>
             <TextBlock Text="UR Manager" 
                        FontSize="30" 
                        Foreground="{StaticResource HeaderForegroundBrush}" VerticalAlignment="Center"/>
