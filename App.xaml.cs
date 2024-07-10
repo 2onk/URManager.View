@@ -2,6 +2,7 @@
 using Microsoft.UI.Xaml;
 using System;
 using URManager.Backend.Data;
+using URManager.Backend.Tracker;
 using URManager.View.ViewModel;
 
 
@@ -31,8 +32,9 @@ namespace URManager.View
             services.AddTransient<IRobotDataProvider, RobotDataProvider>();
         }
 
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            await User.TrackEvent();
             m_window = _serviceProvider.GetService<MainWindow>();
             m_window?.Activate();
         }
