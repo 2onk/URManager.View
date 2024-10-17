@@ -13,6 +13,7 @@ namespace URManager.View.ViewModel
     {
         private TabItems _selectedViewModel;
         private SettingsViewModel _settingsViewModel;
+        private FlexibleEthernetIpViewModel _flexibleEthernetIPViewModel;
         private DispatcherTimer _timer;
         private bool _isBackupButtonChecked = false;
         private bool _isUpdateButtonChecked = false;
@@ -48,6 +49,18 @@ namespace URManager.View.ViewModel
             {
                 if (value == _settingsViewModel) return;
                 _settingsViewModel = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public FlexibleEthernetIpViewModel FlexibleEthernetIpViewModel
+        {
+            get => _flexibleEthernetIPViewModel;
+
+            set
+            {
+                if (value == _flexibleEthernetIPViewModel) return;
+                _flexibleEthernetIPViewModel = value;
                 RaisePropertyChanged();
             }
         }
@@ -170,8 +183,11 @@ namespace URManager.View.ViewModel
         {
             SelectedViewModel = new RobotsViewModel("Robots", new SymbolIconSource { Symbol = Symbol.List }, false);
             SettingsViewModel = new SettingsViewModel("Settings", new SymbolIconSource { Symbol = Symbol.Setting }, false);
+            FlexibleEthernetIpViewModel = new FlexibleEthernetIpViewModel("Flexible Ethernet/IP", new SymbolIconSource { Symbol = Symbol.Library }, false);
+
             Tabs.Add(SelectedViewModel);
             Tabs.Add(SettingsViewModel);
+            Tabs.Add(FlexibleEthernetIpViewModel);
         }
 
         /// <summary>

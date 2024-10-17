@@ -47,6 +47,7 @@
     <None Remove="Properties\PublishProfiles\win10-arm64.pubxml" />
     <None Remove="Resources\Brushes.xaml" />
     <None Remove="Resources\Styles.xaml" />
+    <None Remove="View\FlexibleEthernetIpView.xaml" />
     <None Remove="View\RobotView.xaml" />
     <None Remove="View\SettingsView.xaml" />
     <None Remove="View\TabViewItemSelector.xaml" />
@@ -133,5 +134,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\URManager.Backend\URManager.Backend\URManager.Backend.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="View\FlexibleEthernetIpView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 </Project>

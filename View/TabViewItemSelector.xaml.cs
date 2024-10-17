@@ -28,6 +28,7 @@ namespace URManager.View.View
                 {
                     RobotsViewModel => selector.RobotViewTemplate,
                     SettingsViewModel => selector.SettingsViewTemplate,
+                    FlexibleEthernetIpViewModel => selector.FlexibleEthernetIpViewTemplate,
                     _ => throw new NotImplementedException()
                 };
                 var tabArgs = new ElementFactoryGetArgs { Data = selector._tabTemplate, Parent = selector };

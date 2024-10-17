@@ -19,5 +19,9 @@
                       x:DataType="viewmodel:SettingsViewModel">
             <local:SettingsView/>
         </DataTemplate>
+        <DataTemplate x:Name="FlexibleEthernetIpViewTemplate"
+                      x:DataType="viewmodel:FlexibleEthernetIpViewModel">
+            <local:FlexibleEthernetIpView/>
+        </DataTemplate>
     </TabViewItem.Resources>
 </TabViewItem>

@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
-using System;
 using URManager.Backend.Data;
-using URManager.Backend.Tracker;
 using URManager.View.ViewModel;
 
 
@@ -28,6 +26,7 @@ namespace URManager.View
             services.AddTransient<MainViewModel>();
             services.AddTransient<RobotsViewModel>();
             services.AddTransient<SettingsViewModel>();
+            services.AddTransient<FlexibleEthernetIpViewModel>();
 
             services.AddTransient<IRobotDataProvider, RobotDataProvider>();
         }
