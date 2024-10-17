@@ -34,7 +34,7 @@ namespace URManager.View
 
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            await User.TrackEvent();
+            //await User.TrackEvent();
             m_window = _serviceProvider.GetService<MainWindow>();
             m_window?.Activate();
         }

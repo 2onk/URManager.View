@@ -26,6 +26,7 @@ namespace URManager.View.ViewModel
             SelectViewModelCommand = new DelegateCommand(SelectViewModel);
             StartBackupProcessCommand = new DelegateCommand(StartBackupProcess, CanStartBackupProcess);
             StartUpdateProcessCommand = new DelegateCommand(StartUpdateProcess);
+            //ReportToDasaCommand = new DelegateCommand(ReportToDasa);
         }
 
         public TabItems SelectedViewModel
@@ -74,11 +75,11 @@ namespace URManager.View.ViewModel
                 RaisePropertyChanged();
             }
         }
-
         public DelegateCommand SelectViewModelCommand { get; }
         public DelegateCommand StartBackupProcessCommand { get; }
 
         public DelegateCommand StartUpdateProcessCommand { get; }
+        //public DelegateCommand ReportToDasaCommand { get; }
 
         /// <summary>
         /// Provides dummy robot data to listview
@@ -173,7 +174,10 @@ namespace URManager.View.ViewModel
             Tabs.Add(SettingsViewModel);
         }
 
-
+        /// <summary>
+        /// start update process 
+        /// </summary>
+        /// <param name="parameter"></param>
         private async void StartUpdateProcess(object parameter)
         {
             if (IsUpdateButtonChecked is not true) return;
@@ -184,5 +188,10 @@ namespace URManager.View.ViewModel
                 await robvm.UpdateProcessAsync(SettingsViewModel);
             }
         }
+
+        //private void ReportToDasa(object parameter)
+        //{
+
+        //}
     }
 }

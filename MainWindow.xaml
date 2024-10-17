@@ -59,9 +59,15 @@
         </StackPanel>
 
         <!--Darkmode button-->
-        <Button Grid.ColumnSpan="3" HorizontalAlignment="Right" VerticalAlignment="Top"
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+            <Button Grid.ColumnSpan="3"
             Content="Toggle Darkmode" Margin="10"
             Click="ButtonToggleTheme_Click"/>
+            <!--<Button Grid.ColumnSpan="3"
+            Content="Mail to DASA" Margin="10"
+            Command="{x:Bind ViewModel.ReportToDasaCommand}"/>-->
+        </StackPanel>
+
 
         <!--Header-->
         <controls:HeaderControl Grid.Row="1" Grid.ColumnSpan="3"/>
