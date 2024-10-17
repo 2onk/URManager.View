@@ -32,7 +32,7 @@ namespace URManager.View
             services.AddTransient<IRobotDataProvider, RobotDataProvider>();
         }
 
-        protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             //await User.TrackEvent();
             m_window = _serviceProvider.GetService<MainWindow>();
