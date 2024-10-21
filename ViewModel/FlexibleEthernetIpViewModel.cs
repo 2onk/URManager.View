@@ -1,11 +1,4 @@
-﻿using Microsoft.UI.Xaml.Controls;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using URManager.Backend.Model;
+﻿using URManager.Backend.Model;
 using URManager.View.Command;
 
 namespace URManager.View.ViewModel

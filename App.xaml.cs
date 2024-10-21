@@ -33,7 +33,6 @@ namespace URManager.View
 
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            //await User.TrackEvent();
             m_window = _serviceProvider.GetService<MainWindow>();
             m_window?.Activate();
         }
