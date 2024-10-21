@@ -10,12 +10,96 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
-        <Button Margin="0 10 10 10">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.Resources>
+            <DataTemplate x:Key="FlexibleEthernetIpBitTemplate"
+                          x:DataType="viewModel:FlexibleEthernetIpBitViewModel">
+                <StackPanel Orientation="Horizontal">
+                    <TextBox Text="{x:Bind BitIndex,Mode=OneWay}" IsReadOnly="True" FontWeight="Bold" Margin="5 0 0 0"/>
+                    <TextBox Text="{x:Bind BitName,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="5 0 0 0"/>
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="FlexibleEthernetIpByteTemplate"
+                          x:DataType="viewModel:FlexibleEthernetIpByteViewModel">
+                <StackPanel>
+                    <TextBlock Text="{x:Bind ByteIndex, Mode=OneWay}" FontWeight="Bold" FontSize="16" Margin="5"/>
+                    <ListView ItemsSource="{x:Bind Bits, Mode=OneWay}" 
+                              ItemTemplate="{StaticResource FlexibleEthernetIpBitTemplate}"/>
+                </StackPanel>
+            </DataTemplate>
+        </Grid.Resources>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.ColumnSpan="2">
+            <Button Margin="10">
+                <StackPanel Orientation="Horizontal">
+                    <SymbolIcon Symbol="ShowResults"/>
+                    <TextBlock Text="Generate Flexible Ethernet Ip UR configuraton Script" Margin="5 0 0 0"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <!--Flexible Ethernet Ip Robot Out Configurator-->
+        <Grid x:Name="RobotInputList" Grid.Row="1" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
             <StackPanel Orientation="Horizontal">
-                <SymbolIcon Symbol="Import"/>
-                <TextBlock Text="Import" Margin="5 0 0 0"/>
+                <Button Margin="10" Command="{Binding AddInputByteCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <SymbolIcon Symbol="Add"/>
+                        <TextBlock Text="Input Byte" Margin="5 0 0 0"/>
+                    </StackPanel>
+                </Button>
+                <Button Margin="10" Command="{Binding DeleteInputByteCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <SymbolIcon Symbol="Delete"/>
+                        <TextBlock Text="Input Byte" Margin="5 0 0 0"/>
+                    </StackPanel>
+                </Button>
             </StackPanel>
-        </Button>
+            <ListView Grid.Row="1"
+                      ItemsSource="{Binding Inputs.Bytes, Mode=OneWay}"
+                      SelectedItem="{Binding SelectedInputByte, Mode=TwoWay}"
+                      ItemTemplate="{StaticResource FlexibleEthernetIpByteTemplate}"
+                      ScrollViewer.VerticalScrollMode="Enabled"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+        </Grid>
+
+        <!--Flexible Ethernet Ip Robot In Configurator-->
+        <Grid x:Name="RobotOutputList" Grid.Row="1" Grid.Column="1" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Horizontal">
+                <Button Margin="10" Command="{Binding AddOutputByteCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <SymbolIcon Symbol="Add"/>
+                        <TextBlock Text="Output Byte" Margin="5 0 0 0"/>
+                    </StackPanel>
+                </Button>
+                <Button Margin="10" Command="{Binding DeleteOutputByteCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <SymbolIcon Symbol="Delete"/>
+                        <TextBlock Text="Output Byte" Margin="5 0 0 0"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+            <ListView Grid.Row="1"
+                      ItemsSource="{Binding Outputs.Bytes, Mode=OneWay}"
+                      SelectedItem="{Binding SelectedOutputByte, Mode=TwoWay}"
+                      ItemTemplate="{StaticResource FlexibleEthernetIpByteTemplate}"
+                      ScrollViewer.VerticalScrollMode="Enabled"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+        </Grid>
     </Grid>
 </Page>
