@@ -1,4 +1,6 @@
-﻿using URManager.Backend.Model;
+﻿using URManager.Backend.FlexibleEthernetIp;
+using URManager.Backend.Model;
+using URManager.Backend.ViewModel;
 using URManager.View.Command;
 
 namespace URManager.View.ViewModel
@@ -15,12 +17,14 @@ namespace URManager.View.ViewModel
             AddOutputByteCommand = new DelegateCommand(AddOutputByte);
             DeleteInputByteCommand = new DelegateCommand(DeleteInputByte, CanDeleteInputByte);
             DeleteOutputByteCommand = new DelegateCommand(DeleteOutputByte, CanDeleteOutputByte);
+            GenerateScriptCommand = new DelegateCommand(GenerateScript);
         }
 
         public DelegateCommand AddInputByteCommand { get; }
         public DelegateCommand AddOutputByteCommand { get; }
         public DelegateCommand DeleteInputByteCommand { get; }
         public DelegateCommand DeleteOutputByteCommand { get; }
+        public DelegateCommand GenerateScriptCommand { get; }
 
         public FlexibleEthernetIpByteViewModel SelectedInputByte
         {
@@ -125,5 +129,14 @@ namespace URManager.View.ViewModel
         /// <param name="parameter"></param>
         /// <returns>bool</returns>
         private bool CanDeleteOutputByte(object parameter) => SelectedOutputByte is not null;
+
+
+        private async void GenerateScript(object parameter)
+        {
+            var scriptGenerator = new FlexibleEthernetIpScriptGenerator(Inputs.ToFlexibleEthernetIpBytesList(), Outputs.ToFlexibleEthernetIpBytesList());
+            string savepath = await FilePicker.SaveAsync("Choose your saving path", ".script", "FlexibleEthernetIp.script");
+
+            scriptGenerator.SaveScriptToFile(savepath);
+        }
     }
 }

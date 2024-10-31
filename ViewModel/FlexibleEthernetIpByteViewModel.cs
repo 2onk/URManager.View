@@ -14,6 +14,7 @@ namespace URManager.View.ViewModel
     {
         private int _byteIndex;
         public ObservableCollection<FlexibleEthernetIpBitViewModel> Bits { get; }
+        public FlexibleEthernetIpBytes ByteModel { get; }
 
         public int ByteIndex
         {
@@ -31,6 +32,7 @@ namespace URManager.View.ViewModel
         public FlexibleEthernetIpByteViewModel(int byteIndex, FlexibleEthernetIpBytes byteModel)
         {
             ByteIndex = byteIndex;
+            ByteModel = byteModel;
             Bits = new ObservableCollection<FlexibleEthernetIpBitViewModel>();
 
             foreach (var bit in byteModel.Bits)

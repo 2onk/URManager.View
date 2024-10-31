@@ -38,7 +38,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.ColumnSpan="2">
-            <Button Margin="10">
+            <Button Margin="10" Command="{Binding GenerateScriptCommand}">
                 <StackPanel Orientation="Horizontal">
                     <SymbolIcon Symbol="ShowResults"/>
                     <TextBlock Text="Generate Flexible Ethernet Ip UR configuraton Script" Margin="5 0 0 0"/>

@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using URManager.Backend.Model;
 using URManager.Backend.ViewModel;
@@ -31,6 +32,14 @@ namespace URManager.View.ViewModel
             var byteModel = new FlexibleEthernetIpBytes();
             Bytes.Add(new FlexibleEthernetIpByteViewModel(Bytes.Count, byteModel));
         }
+
+        public List<FlexibleEthernetIpBytes> ToFlexibleEthernetIpBytesList()
+        {
+            return Bytes
+                .Select(byteViewModel => byteViewModel.ByteModel) // ByteModel ist das FlexibleEthernetIpBytes-Objekt in jedem ViewModel
+                .ToList();
+        }
+
 
         //public void DeleteByteBySelectedBit(FlexibleEthernetIpBitViewModel selectedBit)
         //{
