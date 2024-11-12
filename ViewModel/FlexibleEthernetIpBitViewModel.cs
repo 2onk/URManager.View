@@ -12,7 +12,6 @@ namespace URManager.View.ViewModel
             _model = model;
         }
         public int BitIndex => _model.BitIndex;
-
         public string BitName
         {
             get => _model.BitName;

@@ -29,14 +29,14 @@ namespace URManager.View.ViewModel
 
         public void AddByte()
         {
-            var byteModel = new FlexibleEthernetIpBytes();
+            var byteModel = new FlexibleEthernetIpBytes(Bytes.Count);
             Bytes.Add(new FlexibleEthernetIpByteViewModel(Bytes.Count, byteModel));
         }
 
         public List<FlexibleEthernetIpBytes> ToFlexibleEthernetIpBytesList()
         {
             return Bytes
-                .Select(byteViewModel => byteViewModel.ByteModel) // ByteModel ist das FlexibleEthernetIpBytes-Objekt in jedem ViewModel
+                .Select(byteViewModel => byteViewModel.ByteModel)
                 .ToList();
         }
 
