@@ -1,4 +1,5 @@
-﻿using URManager.Backend.FlexibleEthernetIp;
+﻿using System.IO;
+using URManager.Backend.FlexibleEthernetIp;
 using URManager.Backend.Model;
 using URManager.Backend.ViewModel;
 using URManager.View.Command;
@@ -134,9 +135,11 @@ namespace URManager.View.ViewModel
         private async void GenerateScript(object parameter)
         {
             var scriptGenerator = new FlexibleEthernetIpScriptGenerator(Inputs.ToFlexibleEthernetIpBytesList(), Outputs.ToFlexibleEthernetIpBytesList());
-            string savepath = await FilePicker.SaveAsync("Choose your saving path", ".script", "FlexibleEthernetIp.script");
+            string savePath = await FilePicker.SaveAsync("Choose your saving path", ".script", "FlexibleEthernetIp.script");
+            scriptGenerator.SaveScriptToFile(savePath);
 
-            scriptGenerator.SaveScriptToFile(savepath);
+            var edsGenerator = new FlexibleEthernetIpEdsGenerator(Inputs.ToFlexibleEthernetIpBytesList(), Outputs.ToFlexibleEthernetIpBytesList());
+            edsGenerator.SaveEdsToFile(Path.GetDirectoryName(savePath));
         }
     }
 }
