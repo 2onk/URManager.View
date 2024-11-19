@@ -205,9 +205,5 @@ namespace URManager.View.ViewModel
             }
         }
 
-        //private void ReportToDasa(object parameter)
-        //{
-
-        //}
     }
 }

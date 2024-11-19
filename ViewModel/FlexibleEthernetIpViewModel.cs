@@ -1,8 +1,12 @@
-﻿using System.IO;
+﻿using Microsoft.UI.Xaml;
+using System;
 using URManager.Backend.FlexibleEthernetIp;
 using URManager.Backend.Model;
 using URManager.Backend.ViewModel;
 using URManager.View.Command;
+using Windows.Storage.Pickers;
+using Windows.UI.Popups;
+using WinRT.Interop;
 
 namespace URManager.View.ViewModel
 {
@@ -135,11 +139,25 @@ namespace URManager.View.ViewModel
         private async void GenerateScript(object parameter)
         {
             var scriptGenerator = new FlexibleEthernetIpScriptGenerator(Inputs.ToFlexibleEthernetIpBytesList(), Outputs.ToFlexibleEthernetIpBytesList());
-            string savePath = await FilePicker.SaveAsync("Choose your saving path", ".script", "FlexibleEthernetIp.script");
-            scriptGenerator.SaveScriptToFile(savePath);
+            string folderPath = await FilePicker.SaveAsync("Choose your saving path", ".script", "FlexibleEthernetIp.script");
+            scriptGenerator.SaveScriptToFile(folderPath);
 
             var edsGenerator = new FlexibleEthernetIpEdsGenerator(Inputs.ToFlexibleEthernetIpBytesList(), Outputs.ToFlexibleEthernetIpBytesList());
-            edsGenerator.SaveEdsToFile(Path.GetDirectoryName(savePath));
+            edsGenerator.SaveEdsToFile(System.IO.Path.GetDirectoryName(folderPath));
+
+            ShowMessageDialog(folderPath);
+        }
+
+        private async void ShowMessageDialog(string folderPath)
+        {
+            var filename =  System.IO.Path.GetFileNameWithoutExtension(folderPath);
+            var path = System.IO.Path.GetDirectoryName(folderPath);
+            var messageDialog = new MessageDialog($"Generated: \n\n {filename}.script \n {filename}.urp \n {filename}.eds, \n\n {path}", "Success");
+            var hwnd = WindowNative.GetWindowHandle(App.Window);
+            InitializeWithWindow.Initialize(messageDialog, hwnd);
+
+            await messageDialog.ShowAsync();
         }
     }
+    
 }
